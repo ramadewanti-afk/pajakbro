@@ -514,7 +514,7 @@ export default function HomePage() {
                 </Card>
             </div>
             <div className="w-full space-y-8 lg:sticky lg:top-8">
-                 <Card>
+                 <Card className="bg-red-50 border-red-200">
                     <CardHeader>
                         <div className="flex items-center gap-2 mb-4">
                             <History className="h-6 w-6" />
