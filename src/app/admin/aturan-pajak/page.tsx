@@ -99,12 +99,17 @@ const RuleFormDialog = ({
             <Label htmlFor="jenisPajak" className="text-right">
               Jenis Pajak
             </Label>
-            <Input
-              id="jenisPajak"
-              value={formData.jenisPajak || ''}
-              onChange={(e) => handleChange('jenisPajak', e.target.value)}
-              className="col-span-3"
-            />
+             <Select value={formData.jenisPajak} onValueChange={(v) => handleChange('jenisPajak', v)}>
+                <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Pilih Jenis Pajak" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="PPh 21">PPh 21</SelectItem>
+                    <SelectItem value="PPh 22">PPh 22</SelectItem>
+                    <SelectItem value="PPh 23">PPh 23</SelectItem>
+                    <SelectItem value="Pasal 4 ayat 2">Pasal 4 ayat 2</SelectItem>
+                </SelectContent>
+            </Select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="tarifPajak" className="text-right">
