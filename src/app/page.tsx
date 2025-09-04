@@ -1,13 +1,15 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { taxRules, Transaction } from "@/data/tax-rules";
+import { taxRules } from "@/data/tax-rules";
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
 type AsnStatus = "ASN" | "NON ASN";
@@ -16,6 +18,7 @@ type FakturPajak = "Punya" | "Tidak Punya";
 type SertifikatKonstruksi = "Punya" | "Tidak Punya";
 
 export default function HomePage() {
+  const router = useRouter();
   const [jenisTransaksi, setJenisTransaksi] = useState<string>("");
   const [wp, setWp] = useState<WpType>("Orang Pribadi");
   const [nilaiTransaksi, setNilaiTransaksi] = useState<string>("");
@@ -109,6 +112,9 @@ export default function HomePage() {
       jenisPajak: rule.jenisPajak,
       tarif: String(rule.tarifPajak)
     });
+
+    // Instead of showing results here, navigate to the results page
+    router.push('/hasil');
   };
   
   const resetDynamicFields = () => {
