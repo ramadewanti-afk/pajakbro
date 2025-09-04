@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Loader2,
   AlertCircle,
+  LogIn,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { checkComplianceAction, calculateTaxAction } from "./actions";
+import Link from "next/link";
 
 const formSchema = z.object({
   jenisTransaksi: z.string().min(1, "Jenis transaksi harus diisi"),
@@ -132,13 +134,18 @@ export default function PajakBroCalculator() {
   return (
     <div className="min-h-screen w-full bg-background font-body">
       <main className="container mx-auto px-4 py-8">
-        <header className="text-center mb-8">
+        <header className="text-center mb-8 relative">
           <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground md:text-5xl">
             Pajak Bro
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
             Kalkulator Pajak Lengkap untuk Keperluan Dinas
           </p>
+          <Button asChild variant="outline" className="absolute top-0 right-0">
+            <Link href="/admin">
+              <LogIn className="mr-2" /> Admin
+            </Link>
+          </Button>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
