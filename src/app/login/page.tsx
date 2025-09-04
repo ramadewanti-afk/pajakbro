@@ -28,6 +28,7 @@ export default function LoginPage() {
     startTransition(async () => {
       const result = await loginAction({ email, password });
       if (result.success) {
+        // Redirect to admin page on successful login
         router.push('/admin');
       } else if (result.error) {
         setError(result.error);
