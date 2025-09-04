@@ -17,7 +17,7 @@ export default function RiwayatPerhitunganPage() {
 
   const formatCurrency = (value: number) => {
     if (typeof value !== 'number') return '0';
-    return new Intl.NumberFormat('id-ID', { useGrouping: false }).format(value);
+    return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value);
   }
 
   const formatDate = (dateString: string) => {
@@ -135,3 +135,5 @@ export default function RiwayatPerhitunganPage() {
     </Card>
   );
 }
+
+    

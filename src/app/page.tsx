@@ -31,7 +31,7 @@ const ITEMS_PER_PAGE = 10;
 // Function to format currency
 const formatCurrency = (value: number) => {
     if (typeof value !== 'number') return 'Rp 0';
-    return 'Rp ' + new Intl.NumberFormat('id-ID', { useGrouping: false }).format(value);
+    return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value);
 }
 
 // Result display component
@@ -197,37 +197,37 @@ export default function HomePage() {
 
     // Calculate PPN if applicable
     if (rule.kenaPPN) {
-        ppn = nilai - dpp;
+        ppn = Math.round(nilai - dpp);
     }
     
     // Special case for Makan Minum, it has its own tax.
     if (rule.jenisTransaksi === "Makan Minum") {
-        pajakDaerah = dpp * 0.10; // 10% of DPP
+        pajakDaerah = Math.round(dpp * 0.10); // 10% of DPP
     }
 
     // Calculate PPh based on the final DPP
     if (String(rule.tarifPajak).includes('%')) {
         const rate = parseFloat(String(rule.tarifPajak).replace('%', '')) / 100;
-        pph = dpp * rate;
+        pph = Math.round(dpp * rate);
     }
 
     // Special case for Tukang Harian
     if (rule.jenisTransaksi.includes('Tukang Harian')) {
         if (nilai > 450000 && nilai <= 2500000) {
-            pph = (dpp - 450000) * 0.005; // Note: using DPP here may need review based on specific tax law
+            pph = Math.round((dpp - 450000) * 0.005); // Note: using DPP here may need review based on specific tax law
         } else if (nilai > 2500000) {
              const applicableRule = taxRules.find(r => r.jenisTransaksi.includes('Tukang Harian') && r.ptkp === ">2500000");
              if(applicableRule) {
                 const rate = parseFloat(String(applicableRule.tarifPajak).replace('%','')) / 100
-                pph = dpp * rate;
+                pph = Math.round(dpp * rate);
              }
         } else {
             pph = 0;
         }
     }
     
-    const totalPajak = pph + ppn + pajakDaerah;
-    const yangDibayarkan = nilai - totalPajak;
+    const totalPajak = Math.round(pph + ppn + pajakDaerah);
+    const yangDibayarkan = Math.round(nilai - totalPajak);
 
     const result: CalculationResult = {
       id: Date.now(),
@@ -543,3 +543,6 @@ export default function HomePage() {
 
     
 
+
+
+    

@@ -78,7 +78,7 @@ function HasilContent() {
 
     const formatCurrency = (value: number) => {
         if (typeof value !== 'number') return '0';
-        return new Intl.NumberFormat('id-ID', { useGrouping: false }).format(value);
+        return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value);
     }
 
     if (loading || !data) {
@@ -263,3 +263,5 @@ export default function HasilPage() {
         </Suspense>
     )
 }
+
+    
