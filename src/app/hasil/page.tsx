@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams, Suspense } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { ArrowLeft, FileDown, Loader2, QrCode } from "lucide-react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from 'next/navigation';
 import QRCode from "react-qr-code";
 import { CalculationResult } from '@/data/history';
 
@@ -16,16 +16,76 @@ const DEFAULT_LOGO_URL = 'https://placehold.co/80x80';
 
 const formatCurrency = (value: number) => {
     if (typeof value !== 'number') return 'Rp 0';
-    return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Math.round(value));
+    const roundedValue = Math.round(value);
+    return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(roundedValue);
 }
 
-// Dedicated component for rendering the report. This improves stability.
-const HasilReport = ({ data, logoUrl, qrCodeUrl }: { data: CalculationResult; logoUrl: string; qrCodeUrl: string; }) => {
+function HasilContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const [data, setData] = useState<CalculationResult | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO_URL);
+    const [qrCodeUrl, setQrCodeUrl] = useState('');
 
+    useEffect(() => {
+        let resultData = null;
+        const sessionData = sessionStorage.getItem('calculationResult');
+
+        if (sessionData) {
+            try {
+                resultData = JSON.parse(sessionData);
+            } catch (error) {
+                console.error("Failed to parse calculation result from session storage", error);
+            }
+        } else {
+            const dataParam = searchParams.get('data');
+            if (dataParam) {
+                try {
+                    resultData = JSON.parse(atob(dataParam));
+                } catch (error) {
+                    console.error("Failed to parse data from URL", error);
+                }
+            }
+        }
+
+        if (resultData) {
+            setData(resultData);
+            const encodedData = btoa(JSON.stringify(resultData));
+            setQrCodeUrl(`${window.location.origin}/hasil?data=${encodedData}`);
+        } else {
+            router.push('/');
+            return;
+        }
+
+        const storedLogoUrl = localStorage.getItem(LOGO_STORAGE_KEY);
+        if (storedLogoUrl) {
+            setLogoUrl(storedLogoUrl);
+        }
+
+        setLoading(false);
+    }, [router, searchParams]);
+    
     const handlePrint = () => {
         window.print();
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <Loader2 className="h-16 w-16 animate-spin text-primary" />
+            </div>
+        );
+    }
+    
+    if (!data) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <p>Data perhitungan tidak ditemukan.</p>
+                 <Button onClick={() => router.push('/')}>Kembali ke Kalkulator</Button>
+            </div>
+        )
+    }
 
     const formattedDate = data.createdAt ? new Date(data.createdAt).toLocaleString('id-ID', {
         dateStyle: 'long',
@@ -193,75 +253,9 @@ const HasilReport = ({ data, logoUrl, qrCodeUrl }: { data: CalculationResult; lo
 };
 
 
-function HasilContent() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const [data, setData] = useState<CalculationResult | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO_URL);
-    const [qrCodeUrl, setQrCodeUrl] = useState('');
-
-    useEffect(() => {
-        let resultData = null;
-        const sessionData = sessionStorage.getItem('calculationResult');
-
-        if (sessionData) {
-            try {
-                resultData = JSON.parse(sessionData);
-            } catch (error) {
-                console.error("Failed to parse calculation result from session storage", error);
-            }
-        } else {
-            const dataParam = searchParams.get('data');
-            if (dataParam) {
-                try {
-                    resultData = JSON.parse(atob(dataParam));
-                } catch (error) {
-                    console.error("Failed to parse data from URL", error);
-                }
-            }
-        }
-
-        if (resultData) {
-            setData(resultData);
-            const encodedData = btoa(JSON.stringify(resultData));
-            setQrCodeUrl(`${window.location.origin}/hasil?data=${encodedData}`);
-        } else {
-            router.push('/');
-            return;
-        }
-
-        const storedLogoUrl = localStorage.getItem(LOGO_STORAGE_KEY);
-        if (storedLogoUrl) {
-            setLogoUrl(storedLogoUrl);
-        }
-
-        setLoading(false);
-    }, [router, searchParams]);
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <Loader2 className="h-16 w-16 animate-spin text-primary" />
-            </div>
-        );
-    }
-    
-    if (!data) {
-         // This case should ideally not be reached due to the redirect, but it's a good safeguard.
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <p>Data perhitungan tidak ditemukan.</p>
-                 <Button onClick={() => router.push('/')}>Kembali ke Kalkulator</Button>
-            </div>
-        )
-    }
-
-    return <HasilReport data={data} logoUrl={logoUrl} qrCodeUrl={qrCodeUrl} />;
-}
-
-
 export default function HasilPage() {
+    // Suspense is used for client-side navigation transitions.
+    // It's a good practice to wrap the content in it.
     return (
         <Suspense fallback={
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
