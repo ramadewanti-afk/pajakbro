@@ -31,7 +31,7 @@ export default function RiwayatPerhitunganPage() {
     router.push('/hasil');
   };
 
-  const toggleStatus = (idToToggle: number) => {
+  const toggleStatus = (idToToggle: string) => {
     setHistory(currentHistory =>
       currentHistory.map(item =>
         item.id === idToToggle
@@ -41,7 +41,7 @@ export default function RiwayatPerhitunganPage() {
     );
   };
   
-  const handleDelete = (idToDelete: number) => {
+  const handleDelete = (idToDelete: string) => {
     setHistory(currentHistory => currentHistory.filter(item => item.id !== idToDelete));
   }
 
@@ -72,9 +72,9 @@ export default function RiwayatPerhitunganPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {history.sort((a, b) => b.id - a.id).map((item) => (
+              {history.sort((a, b) => b.createdAt > a.createdAt ? 1 : -1).map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-mono text-xs">#{String(item.id).slice(-6)}</TableCell>
+                  <TableCell className="font-mono text-xs">#{item.id}</TableCell>
                   <TableCell className="font-medium max-w-xs truncate">{item.jenisTransaksi}</TableCell>
                   <TableCell>{formatCurrency(item.nilaiTransaksi)}</TableCell>
                   <TableCell>{formatCurrency(item.totalPajak)}</TableCell>
@@ -133,5 +133,3 @@ export default function RiwayatPerhitunganPage() {
     </Card>
   );
 }
-
-    

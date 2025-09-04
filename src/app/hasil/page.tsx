@@ -131,7 +131,7 @@ export default function HasilPage() {
                             <TableBody>
                                 <TableRow>
                                     <TableCell className="font-semibold w-1/3">ID Transaksi</TableCell>
-                                    <TableCell className="w-2/3">: #{String(data.id).slice(-6)}</TableCell>
+                                    <TableCell className="w-2/3">: #{data.id}</TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell className="font-semibold">Tanggal & Waktu Dibuat</TableCell>

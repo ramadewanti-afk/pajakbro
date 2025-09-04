@@ -1,6 +1,6 @@
 
 export type CalculationResult = {
-    id: number;
+    id: string; // Changed from number to string
     namaBidang: string;
     subKegiatan: string;
     jenisTransaksi: string;

@@ -38,6 +38,12 @@ const formatCurrency = (value: number) => {
     return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(roundedValue);
 }
 
+// Function to generate a short alphanumeric ID
+const generateShortId = () => {
+    return Math.random().toString(36).substring(2, 9).toUpperCase();
+}
+
+
 // Result display component
 const CalculationResultDisplay = ({ result, onSave }: { result: CalculationResult | null, onSave: () => void }) => {
     if (!result) return null;
@@ -183,7 +189,7 @@ export default function HomePage() {
   const [departments] = useLocalStorage("departments", initialDepartments);
   const [activities] = useLocalStorage("activities", initialActivities);
   const [transactionTypes] = useLocalStorage("transactionTypes", initialTransactionTypes);
-  const [calculationHistory, setCalculationHistory] = useLocalStorage("calculationHistory", initialHistory);
+  const [calculationHistory, setCalculationHistory] = useLocalStorage<CalculationResult[]>("calculationHistory", initialHistory);
   
   // Master Data State
   const [jenisTransaksi, setJenisTransaksi] = useState<string>("");
@@ -213,10 +219,11 @@ export default function HomePage() {
   }, []);
   
   const filteredHistory = useMemo(() => {
-    const activeHistory = calculationHistory.filter(item => item.status === 'Aktif').sort((a, b) => b.id - a.id);
+    const activeHistory = calculationHistory.filter(item => item.status === 'Aktif').sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
     if (!searchTerm) return activeHistory;
     return activeHistory.filter(item => 
-        String(item.id).slice(-6).toLowerCase().includes(searchTerm.toLowerCase())
+        item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.jenisTransaksi.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [calculationHistory, searchTerm]);
   
@@ -323,7 +330,7 @@ export default function HomePage() {
     const yangDibayarkan = Math.round(nilai - totalPajak);
 
     const result: CalculationResult = {
-      id: Date.now(),
+      id: generateShortId(),
       namaBidang: selectedBidang,
       subKegiatan: selectedKegiatan,
       jenisTransaksi,
@@ -606,7 +613,7 @@ export default function HomePage() {
                          <div className="relative w-full">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input 
-                                placeholder="Cari berdasarkan ID..." 
+                                placeholder="Cari berdasarkan ID atau jenis transaksi..." 
                                 className="pl-9"
                                 value={searchTerm}
                                 onChange={handleSearchChange}
@@ -624,7 +631,7 @@ export default function HomePage() {
                                         >
                                             <div>
                                                 <p className="font-semibold truncate">
-                                                    <span className="font-mono text-primary mr-2">#{String(item.id).slice(-6)}</span>
+                                                    <span className="font-mono text-primary mr-2">#{item.id}</span>
                                                     {item.jenisTransaksi}
                                                 </p>
                                                 <p className="text-xs text-muted-foreground">{formatDate(item.createdAt)}</p>
@@ -639,7 +646,7 @@ export default function HomePage() {
                                  <FileWarning className="h-4 w-4" />
                                 <AlertTitle>{searchTerm ? "Tidak Ditemukan" : "Riwayat Kosong"}</AlertTitle>
                                 <AlertDescription>
-                                    {searchTerm ? `Tidak ada riwayat yang cocok dengan ID "${searchTerm}".` : "Anda belum melakukan perhitungan apapun. Hasil akan muncul di sini."}
+                                    {searchTerm ? `Tidak ada riwayat yang cocok dengan pencarian "${searchTerm}".` : "Anda belum melakukan perhitungan apapun. Hasil akan muncul di sini."}
                                 </AlertDescription>
                             </Alert>
                         )}
