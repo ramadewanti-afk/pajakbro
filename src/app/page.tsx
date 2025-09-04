@@ -244,7 +244,6 @@ export default function HomePage() {
 
   // Calculation and history state
   const [error, setError] = useState<string>("");
-  const [infoMessage, setInfoMessage] = useState<string>("");
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
   
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -283,31 +282,9 @@ export default function HomePage() {
     });
 
     if (candidates.length === 0) return null;
-    if (candidates.length === 1) return candidates[0];
-
-    // If multiple candidates remain, find the most specific one.
-    // A rule is more specific if its secondary conditions are not "N/A".
-    const scoredCandidates = candidates.map(rule => {
-        let score = 0;
-        if (rule.fakturPajak !== 'N/A') score++;
-        if (rule.asn !== 'N/A') score++;
-        if (rule.golongan !== 'N/A') score++;
-        if (rule.sertifikatKonstruksi !== 'N/A') score++;
-        return { rule, score };
-    }).sort((a, b) => b.score - a.score);
-
-    // Filter for the highest score
-    const highestScore = scoredCandidates[0].score;
-    const bestCandidates = scoredCandidates.filter(c => c.score === highestScore);
-
-    // If there's still ambiguity, we can't proceed. 
-    // This indicates a configuration issue (e.g., two identical rules).
-    if (bestCandidates.length > 1) {
-         console.warn("Ambiguous rules found", bestCandidates.map(c => c.rule));
-         // We'll just return the first one as a fallback.
-    }
     
-    return bestCandidates[0].rule;
+    // Fallback to the first match if multiple are found (should be rare with good rules)
+    return candidates[0];
   };
 
   // Effect to trigger automatic calculation
@@ -411,17 +388,6 @@ export default function HomePage() {
       setNilaiTransaksi(''); // Reset value to force recalculation
       setCalculationResult(null);
       setError("");
-      
-      const rulesForTransaction = taxRules.filter(r => r.jenisTransaksi === value);
-      const ptkpRule = rulesForTransaction.find(r => r.ptkp && r.ptkp.startsWith('>'));
-      
-      if (ptkpRule) {
-          const ptkpValue = ptkpRule.ptkp.replace(/[>=]/g, '');
-          const formattedValue = formatCurrency(parseInt(ptkpValue, 10));
-          setInfoMessage(`Info: Untuk transaksi ini, nilai di atas ${formattedValue} akan dikenai PPh/PPN sesuai aturan yang berlaku.`);
-      } else {
-          setInfoMessage("");
-      }
   }
   
   const viewHistoryDetails = (item: CalculationResult) => {
@@ -524,15 +490,6 @@ export default function HomePage() {
                         </div>
                       </div>
                       
-                       {infoMessage && (
-                        <Alert variant="default" className="bg-blue-100 border-blue-200 text-blue-800">
-                           <Info className="h-4 w-4 text-blue-700" />
-                           <AlertDescription className="text-xs">
-                                {infoMessage}
-                           </AlertDescription>
-                        </Alert>
-                      )}
-
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-white">
                           <div className="space-y-2">
                             <Label htmlFor="bidang-bagian">Bidang / Bagian (Opsional)</Label>
@@ -636,5 +593,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
