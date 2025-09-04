@@ -17,6 +17,7 @@
     "@radix-ui/react-select": "*",
     "@radix-ui/react-separator": "*",
     "@radix-ui/react-slot": "*",
+    "@radix-ui/react-switch": "*",
     "@radix-ui/react-tooltip": "*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
