@@ -217,7 +217,7 @@ function HasilContent() {
                                     <TableCell>Tarif PPN</TableCell>
                                     <TableCell>: {data.tarifPpn}</TableCell>
                                 </TableRow>
-                                <TableRow className="bg-blue-100 font-bold">
+                                <TableRow className="bg-blue-50 font-medium">
                                     <TableCell>PPN</TableCell>
                                     <TableCell>: Rp {formatCurrency(data.ppn)}</TableCell>
                                 </TableRow>
@@ -225,7 +225,7 @@ function HasilContent() {
                                     <TableCell>Kode KAP E-Billing PPN</TableCell>
                                     <TableCell>: {data.kodeKapPpn}</TableCell>
                                 </TableRow>
-                                <TableRow className="bg-blue-100 font-bold">
+                                <TableRow className="bg-blue-50 font-medium">
                                     <TableCell>Jenis Pajak</TableCell>
                                     <TableCell>: {data.jenisPajak}</TableCell>
                                 </TableRow>
@@ -233,7 +233,7 @@ function HasilContent() {
                                     <TableCell>Tarif Pajak</TableCell>
                                     <TableCell>: {data.tarifPajak}</TableCell>
                                 </TableRow>
-                                <TableRow className="bg-blue-100 font-bold">
+                                <TableRow className="bg-blue-50 font-medium">
                                     <TableCell>Pajak PPh</TableCell>
                                     <TableCell>: Rp {formatCurrency(data.pajakPph)}</TableCell>                            
                                 </TableRow>
@@ -241,11 +241,11 @@ function HasilContent() {
                                     <TableCell>Kode KAP E-Billing PPh</TableCell>
                                     <TableCell>: {data.kodeKapPph}</TableCell>
                                 </TableRow>
-                                <TableRow className="bg-blue-200 font-bold text-lg">
+                                <TableRow className="bg-primary/10 font-bold text-lg text-primary">
                                     <TableCell>Total Pajak</TableCell>
                                     <TableCell>: Rp {formatCurrency(data.totalPajak)}</TableCell>
                                 </TableRow>
-                                <TableRow className="bg-blue-200 font-bold text-lg">
+                                <TableRow className="bg-primary/10 font-bold text-lg text-primary">
                                     <TableCell>Yang dibayarkan</TableCell>
                                     <TableCell>: Rp {formatCurrency(data.yangDibayarkan)}</TableCell>
                                 </TableRow>

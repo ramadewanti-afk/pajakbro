@@ -59,8 +59,14 @@ const CalculationResultDisplay = ({ result, onSave }: { result: CalculationResul
 
                     {result.ppn > 0 && (
                         <>
-                            <p className="text-muted-foreground">PPN (11%)</p>
+                            <p className="text-muted-foreground">PPN ({result.tarifPpn})</p>
                             <p className="font-mono text-right">{formatCurrency(result.ppn)}</p>
+                        </>
+                    )}
+                     {result.pajakDaerah > 0 && (
+                        <>
+                            <p className="text-muted-foreground">Pajak Daerah (10%)</p>
+                            <p className="font-mono text-right">{formatCurrency(result.pajakDaerah)}</p>
                         </>
                     )}
                  </div>
@@ -202,7 +208,7 @@ export default function HomePage() {
     }
     
     const pajakDaerah = rule.jenisTransaksi === "Makan Minum" ? dpp * 0.10 : 0;
-    const totalPajak = pph + ppn;
+    const totalPajak = pph + ppn + pajakDaerah;
     const yangDibayarkan = nilai - pph;
 
     const result: CalculationResult = {
@@ -429,7 +435,7 @@ export default function HomePage() {
                                  </div>
                                  <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="Tidak Punya" id="sk-tidak" />
-                                    <Label htmlFor="sk-tidak">Tidak</Label>
+                                    <Label htmlFor="sk-tidak">Tidak</Label>_
                                  </div>
                               </RadioGroup>
                             </div>
