@@ -28,7 +28,6 @@ type AsnStatus = "ASN" | "NON ASN" | "N/A";
 type AsnGolongan = "I" | "II" | "III" | "IV" | "N/A";
 type FakturPajak = "Punya" | "Tidak Punya" | "N/A";
 type SertifikatKonstruksi = "Punya" | "Tidak Punya" | "N/A";
-type DikenakanPpn = "Ya" | "Tidak" | "N/A";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -45,6 +44,30 @@ const generateShortId = () => {
     const randomPart = Math.random().toString(36).substring(2, 5); // Get 3 random chars
     return (timestampPart + randomPart).toUpperCase();
 }
+
+// Check if a value is within a PTKP range string (e.g., ">2000000" or "0-2000000")
+const checkPtkp = (value: number, ptkp: string): boolean => {
+    if (ptkp === "N/A" || !ptkp) return true; // Matches all if not specified
+    
+    if (ptkp.startsWith('>')) {
+        const limit = parseFloat(ptkp.substring(1));
+        return !isNaN(limit) && value > limit;
+    }
+
+    if (ptkp.startsWith('<=')) {
+        const limit = parseFloat(ptkp.substring(2));
+        return !isNaN(limit) && value <= limit;
+    }
+    
+    if (ptkp.includes('-')) {
+        const [min, max] = ptkp.split('-').map(Number);
+        if (!isNaN(min) && !isNaN(max)) {
+            return value >= min && value <= max;
+        }
+    }
+    
+    return false; // Return false if format is unrecognized
+};
 
 
 // Result display component
@@ -211,7 +234,6 @@ export default function HomePage() {
   const [asnStatus, setAsnStatus] = useState<AsnStatus>("N/A");
   const [asnGolongan, setAsnGolongan] = useState<AsnGolongan>("N/A");
   const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState<SertifikatKonstruksi>("N/A");
-  const [dikenakanPpn, setDikenakanPpn] = useState<DikenakanPpn>("N/A");
   
   // Calculation and history state
   const [error, setError] = useState<string>("");
@@ -239,16 +261,20 @@ export default function HomePage() {
   }
 
   const findMatchingRule = () => {
-    const ppnChoice = dikenakanPpn === 'Ya' ? true : dikenakanPpn === 'Tidak' ? false : null;
+    const nilai = parseFloat(nilaiTransaksi);
+    if (isNaN(nilai)) return null;
 
     const candidates = taxRules.filter(r => {
+        // Basic filtering
         if (r.status !== 'Aktif' || r.jenisTransaksi !== jenisTransaksi || r.wp !== wp) {
             return false;
         }
-        // If user has made a choice on PPN, filter by it.
-        if (ppnChoice !== null && r.kenaPPN !== ppnChoice) {
+
+        // Check transaction value against the rule's PTKP
+        if (!checkPtkp(nilai, r.ptkp)) {
             return false;
         }
+        
         return true;
     });
 
@@ -300,7 +326,7 @@ export default function HomePage() {
     setError("");
     performCalculation(nilai, rule);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi, dikenakanPpn]);
+  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
 
   
  const performCalculation = (nilai: number, rule: Transaction) => {
@@ -334,8 +360,8 @@ export default function HomePage() {
         pph = Math.round(dpp * rate);
     }
 
-    // Special case for Tukang Harian
-    if (rule.jenisTransaksi.includes('Tukang Harian')) {
+    // Special case for Tukang Harian that has its own logic based on value
+    if (rule.jenisTransaksi.includes('Tukang Harian (Pekerja lepas)')) {
         if (nilai > 450000 && nilai <= 2500000) {
             pph = Math.round((dpp - 450000) * 0.005);
         } else if (nilai > 2500000) {
@@ -371,7 +397,7 @@ export default function HomePage() {
       pajakDaerah: pajakDaerah,
       tarifPpn: rule.kenaPPN ? "11%" : "0%",
       ppn: ppn,
-      kodeKapPpn: rule.kenaPPN ? "411211-100" : "-",
+      kodeKapPpn: rule.kenaPPN ? rule.kodeKapPpn : "-",
       totalPajak: totalPajak,
       yangDibayarkan: yangDibayarkan,
       createdAt: new Date().toISOString(),
@@ -399,9 +425,7 @@ export default function HomePage() {
       setAsnStatus("N/A");
       setAsnGolongan("N/A");
       setSertifikatKonstruksi("N/A");
-      setDikenakanPpn("N/A");
       setError("");
-      setJenisTransaksi("");
       setCalculationResult(null);
   }
 
@@ -413,13 +437,7 @@ export default function HomePage() {
   const handleTransactionChange = (value: string) => {
       setJenisTransaksi(value);
       // Reset specific fields when transaction changes, but keep WP and amount
-      setFakturPajak("N/A");
-      setAsnStatus("N/A");
-      setAsnGolongan("N/A");
-      setSertifikatKonstruksi("N/A");
-      setDikenakanPpn("N/A");
-      setError("");
-      setCalculationResult(null);
+      resetDynamicFields();
   }
   
   const viewHistoryDetails = (item: CalculationResult) => {
@@ -530,27 +548,6 @@ export default function HomePage() {
                        <div>
                           <Label className="text-sm text-muted-foreground">Kondisi Spesifik (jika ada)</Label>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-white mt-2">
-                            <div className="space-y-2">
-                              <Label>Dikenakan PPN?</Label>
-                              <RadioGroup 
-                                value={dikenakanPpn} 
-                                onValueChange={(v) => setDikenakanPpn(v as DikenakanPpn)} 
-                                className="flex space-x-4 pt-2"
-                              >
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Ya" id="ppn-ya" />
-                                    <Label htmlFor="ppn-ya">Ya</Label>
-                                 </div>
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Tidak" id="ppn-tidak" />
-                                    <Label htmlFor="ppn-tidak">Tidak</Label>
-                                 </div>
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="N/A" id="ppn-na" />
-                                    <Label htmlFor="ppn-na">N/A</Label>
-                                 </div>
-                              </RadioGroup>
-                            </div>
                             <div className="space-y-2">
                               <Label>Punya Faktur Pajak?</Label>
                               <RadioGroup 

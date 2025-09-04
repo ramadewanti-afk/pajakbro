@@ -46,7 +46,7 @@ const RuleFormDialog = ({
           asn: "N/A",
           golongan: "N/A",
           sertifikatKonstruksi: "N/A",
-          ptkp: "0",
+          ptkp: "N/A",
           jenisPajak: "",
           kodePajak: "",
           dppRatio: "100/100",
@@ -155,7 +155,7 @@ const RuleFormDialog = ({
                         <Input
                             value={formData.ptkp || ''}
                             onChange={(e) => handleChange('ptkp', e.target.value)}
-                            placeholder="Contoh: >2000000 atau 0-450000 atau N/A"
+                            placeholder="Contoh: >2000000 atau 0-2000000 atau N/A"
                         />
                     </div>
                 </div>
@@ -176,19 +176,20 @@ const RuleFormDialog = ({
                                 <SelectItem value="PPh 22">PPh 22</SelectItem>
                                 <SelectItem value="PPh 23">PPh 23</SelectItem>
                                 <SelectItem value="Pasal 4 ayat 2">Pasal 4 ayat 2</SelectItem>
+                                <SelectItem value="N/A">N/A (Tidak ada PPh)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-1.5">
                         <Label>Kode Pajak PPh</Label>
-                        <Input value={formData.kodePajak} onChange={(e) => handleChange('kodePajak', e.target.value)} placeholder="Contoh: 411121-100" />
+                        <Input value={formData.kodePajak} onChange={(e) => handleChange('kodePajak', e.target.value)} placeholder="Contoh: 411121-100 atau -" />
                     </div>
                     <div className="space-y-1.5">
                         <Label>DPP Rasio</Label>
                         <Select value={formData.dppRatio} onValueChange={(v) => handleChange('dppRatio', v)}>
                             <SelectTrigger><SelectValue placeholder="Pilih Rasio DPP" /></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="100/100">100/100 (Tanpa PPN)</SelectItem>
+                                <SelectItem value="100/100">100/100 (Tanpa PPN/Pajak Daerah)</SelectItem>
                                 <SelectItem value="100/110">100/110 (Termasuk Pajak Daerah 10%)</SelectItem>
                                 <SelectItem value="100/111">100/111 (Termasuk PPN 11%)</SelectItem>
                             </SelectContent>
@@ -312,9 +313,10 @@ export default function AturanPajakPage() {
               <TableHeader>
                   <TableRow>
                   <TableHead>Jenis Transaksi</TableHead>
-                  <TableHead>Wajib Pajak</TableHead>
+                  <TableHead>Kondisi</TableHead>
                   <TableHead>Jenis Pajak</TableHead>
                   <TableHead>Tarif</TableHead>
+                  <TableHead>Kena PPN</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
@@ -323,11 +325,17 @@ export default function AturanPajakPage() {
                   {rules.map((rule) => (
                   <TableRow key={rule.id}>
                       <TableCell className="font-medium max-w-xs truncate">{rule.jenisTransaksi}</TableCell>
-                      <TableCell>{rule.wp}</TableCell>
+                      <TableCell className="text-xs">
+                        <p>WP: {rule.wp}</p>
+                        <p>PTKP: {rule.ptkp}</p>
+                      </TableCell>
                       <TableCell>
                           <Badge variant="secondary">{rule.jenisPajak}</Badge>
                       </TableCell>
                       <TableCell className="font-mono">{rule.tarifPajak}</TableCell>
+                       <TableCell>
+                          {rule.kenaPPN ? <Badge variant="default">Ya</Badge> : <Badge variant="destructive">Tidak</Badge>}
+                      </TableCell>
                       <TableCell>
                         {rule.status === 'Aktif' ? (
                             <Badge variant="default">Aktif</Badge>
@@ -384,3 +392,5 @@ export default function AturanPajakPage() {
     </>
   );
 }
+
+    
