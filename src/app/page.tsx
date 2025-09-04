@@ -288,7 +288,7 @@ export default function PajakBroCalculator() {
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Pilih jenis wajib pajak" />
-                              </SelectTrigger>
+                              </Trigger>
                             </FormControl>
                             <SelectContent>
                               <SelectItem value="Orang Pribadi">Orang Pribadi</SelectItem>
@@ -341,7 +341,7 @@ export default function PajakBroCalculator() {
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Pilih Golongan ASN"/>
-                                  </SelectTrigger>
+                                  </Trigger>
                                 </FormControl>
                                 <SelectContent>
                                   <SelectItem value="Golongan I">Golongan I</SelectItem>
@@ -382,7 +382,7 @@ export default function PajakBroCalculator() {
                       <FormItem>
                         <FormLabel>Nilai Transaksi (DPP)</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="cth: 1000000" {...field} />
+                          <Input type="number" placeholder="cth: 1000000" {...field} className="bg-accent/20 focus:bg-accent/30" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -425,8 +425,8 @@ export default function PajakBroCalculator() {
                       <span className="font-medium">{formatCurrency(ppn)}</span>
                   </div>
               </div>
-              <div className="mt-4 p-4 bg-accent/30 rounded-lg">
-                <div className="flex justify-between items-center font-bold text-lg text-green-800">
+              <div className="mt-4 p-4 bg-primary/90 rounded-lg">
+                <div className="flex justify-between items-center font-bold text-lg text-primary-foreground">
                     <span>TOTAL PAJAK</span>
                     <span>{formatCurrency(totalPajak)}</span>
                 </div>
