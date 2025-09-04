@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, ListTree, LogOut, ShieldCheck, BookType, Briefcase, ClipboardList, Users, Settings } from "lucide-react";
+import { LayoutDashboard, ListTree, LogOut, ShieldCheck, BookType, Briefcase, ClipboardList, Users, Settings, History } from "lucide-react";
 import React from 'react';
 import Link from 'next/link';
 
@@ -96,6 +96,16 @@ export default function AdminLayout({
                     >
                       <ListTree />
                       Master Data Aturan Pajak
+                    </SidebarMenuButton>
+                 </Link>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                 <Link href="/admin/riwayat-perhitungan" passHref>
+                    <SidebarMenuButton
+                      isActive={pathname === '/admin/riwayat-perhitungan'}
+                    >
+                      <History />
+                      Riwayat Perhitungan
                     </SidebarMenuButton>
                  </Link>
               </SidebarMenuItem>

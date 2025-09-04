@@ -13,6 +13,7 @@ import { taxRules } from "@/data/tax-rules";
 import { departments } from "@/data/departments";
 import { activities } from "@/data/activities";
 import { transactionTypes } from "@/data/transaction-types";
+import { calculationHistory, CalculationResult } from "@/data/history";
 import { Calculator, Coins, LogIn, History, ArrowRight, Search, FileWarning, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -24,36 +25,7 @@ type AsnGolongan = "I" | "II" | "III" | "IV";
 type FakturPajak = "Punya" | "Tidak Punya";
 type SertifikatKonstruksi = "Punya" | "Tidak Punya";
 
-const HISTORY_STORAGE_KEY = 'calculationHistory';
 const ITEMS_PER_PAGE = 10;
-
-// This type is used for both history and the full result passed to the next page.
-// Ensure all necessary fields are included.
-type CalculationResult = {
-    id: number;
-    namaBidang: string;
-    subKegiatan: string;
-    jenisTransaksi: string;
-    wajibPajak: string;
-    fakturPajak: string;
-    asn: string;
-    golongan: string;
-    sertifikatKonstruksi: string;
-    nilaiTransaksi: number;
-    jenisPajak: string;
-    tarifPajak: string;
-    nilaiDpp: number;
-    pajakPph: number;
-    kodeKapPph: string;
-    pajakDaerah: number;
-    tarifPpn: string;
-    ppn: number;
-    kodeKapPpn: string;
-    totalPajak: number;
-    yangDibayarkan: number;
-    createdAt: string;
-};
-
 
 export default function HomePage() {
   const router = useRouter();
@@ -83,16 +55,10 @@ export default function HomePage() {
     // Clear session storage on initial load to ensure a fresh start
     sessionStorage.removeItem('calculationResult');
 
-    // Load history from local storage
-    const storedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
-    if (storedHistory) {
-        try {
-            setHistory(JSON.parse(storedHistory));
-        } catch (e) {
-            console.error("Failed to parse history from localStorage", e);
-            setHistory([]);
-        }
-    }
+    // Load history from central data source
+    // In a real app, this would be an API call.
+    // For prototype, we filter only active items for the user view.
+    setHistory(calculationHistory.filter(item => item.status === 'Aktif').sort((a, b) => b.id - a.id));
   }, []);
   
   const filteredHistory = useMemo(() => {
@@ -231,19 +197,16 @@ export default function HomePage() {
       kodeKapPpn: rule.kenaPPN ? "411211-100" : "-", // Example KODE PPN
       totalPajak: totalPajak,
       yangDibayarkan: yangDibayarkan,
-      createdAt: new Date().toISOString(), // Add creation timestamp
+      createdAt: new Date().toISOString(),
+      status: 'Aktif',
     };
     
     // Save to session storage for immediate viewing
     sessionStorage.setItem('calculationResult', JSON.stringify(resultData));
 
-    // Save to local storage for history
-    const newHistory = [resultData, ...history];
-    // Keep only the last 50 entries
-    const limitedHistory = newHistory.slice(0, 50);
-    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(limitedHistory)); 
-    setHistory(limitedHistory);
-
+    // Save to central "database"
+    calculationHistory.unshift(resultData);
+    setHistory([resultData, ...history]);
 
     router.push('/hasil');
   };
