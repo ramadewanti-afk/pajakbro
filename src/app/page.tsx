@@ -419,10 +419,7 @@ export default function HomePage() {
      return new Date(dateString).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
   }
 
-  const showFakturPajak = useMemo(() => taxRules.some(r => r.status === 'Aktif' && r.jenisTransaksi === jenisTransaksi && r.wp === wp && r.fakturPajak !== 'N/A'), [taxRules, jenisTransaksi, wp]);
-  const showAsnStatus = useMemo(() => taxRules.some(r => r.status === 'Aktif' && r.jenisTransaksi === jenisTransaksi && r.wp === wp && r.asn !== 'N/A'), [taxRules, jenisTransaksi, wp]);
-  const showAsnGolongan = useMemo(() => showAsnStatus && asnStatus === 'ASN' && taxRules.some(r => r.status === 'Aktif' && r.jenisTransaksi === jenisTransaksi && r.wp === wp && r.asn === 'ASN' && r.golongan !== 'N/A'), [taxRules, jenisTransaksi, wp, asnStatus, showAsnStatus]);
-  const showSertifikatKonstruksi = useMemo(() => taxRules.some(r => r.status === 'Aktif' && r.jenisTransaksi === jenisTransaksi && r.wp === wp && r.sertifikatKonstruksi !== 'N/A'), [taxRules, jenisTransaksi, wp]);
+  const showAsnGolongan = useMemo(() => asnStatus === 'ASN', [asnStatus]);
 
 
   return (
@@ -527,7 +524,6 @@ export default function HomePage() {
                                 value={fakturPajak} 
                                 onValueChange={(v) => setFakturPajak(v as FakturPajak)} 
                                 className="flex space-x-4 pt-2"
-                                disabled={!showFakturPajak}
                               >
                                  <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="Punya" id="fp-punya" />
@@ -541,7 +537,7 @@ export default function HomePage() {
                             </div>
                             <div className="space-y-2">
                                 <Label>Status Kepegawaian</Label>
-                                <Select value={asnStatus} onValueChange={(v) => setAsnStatus(v as AsnStatus)} disabled={!showAsnStatus}>
+                                <Select value={asnStatus} onValueChange={(v) => setAsnStatus(v as AsnStatus)}>
                                     <SelectTrigger><SelectValue placeholder="Pilih Status" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="ASN">ASN</SelectItem>
@@ -567,7 +563,6 @@ export default function HomePage() {
                                 value={sertifikatKonstruksi} 
                                 onValueChange={(v) => setSertifikatKonstruksi(v as SertifikatKonstruksi)} 
                                 className="flex space-x-4 pt-2"
-                                disabled={!showSertifikatKonstruksi}
                               >
                                  <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="Punya" id="sk-punya" />
@@ -685,3 +680,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
