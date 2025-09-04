@@ -65,11 +65,9 @@ export default function HasilPage() {
 
         if (resultData) {
             setData(resultData);
-            const encodedData = btoa(JSON.stringify(resultData));
-            setQrCodeUrl(`${window.location.origin}/hasil?data=${encodedData}`);
-        } else {
             if (typeof window !== 'undefined') {
-                // router.push('/'); // Avoid pushing immediately to prevent hydration issues
+                const encodedData = btoa(JSON.stringify(resultData));
+                setQrCodeUrl(`${window.location.origin}/hasil?data=${encodedData}`);
             }
         }
 
@@ -289,3 +287,5 @@ export default function HasilPage() {
         </div>
     );
 };
+
+    
