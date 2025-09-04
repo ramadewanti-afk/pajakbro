@@ -608,10 +608,6 @@ export default function HomePage() {
                                         <RadioGroupItem value="Tidak" id="ppn-tidak" />
                                         <Label htmlFor="ppn-tidak">Tidak</Label>
                                     </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="N/A" id="ppn-na" />
-                                        <Label htmlFor="ppn-na">Otomatis</Label>
-                                    </div>
                                 </RadioGroup>
                             </div>
                             <div className="space-y-2">
@@ -786,3 +782,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
