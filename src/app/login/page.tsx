@@ -19,19 +19,19 @@ import { loginAction } from './actions';
 export default function LoginPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@pajak.bro');
+  const [password, setPassword] = useState('admin123');
   const [error, setError] = useState('');
 
   const handleLogin = () => {
     setError('');
     startTransition(async () => {
       const result = await loginAction({ email, password });
-      if (result.error) {
-        setError(result.error);
-      } else {
+      if (result.success) {
         router.push('/admin');
         router.refresh(); // Refresh to make sure server session is picked up
+      } else if (result.error) {
+        setError(result.error);
       }
     });
   };
