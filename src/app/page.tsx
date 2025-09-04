@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
 
 const MAIN_TITLE_KEY = 'app-main-title';
 const DEFAULT_MAIN_TITLE = 'Kalkulator Pajak Bro';
@@ -250,7 +250,6 @@ export default function HomePage() {
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [visibleHistoryCount, setVisibleHistoryCount] = useState<number>(ITEMS_PER_PAGE);
     
   // Customization state
   const [mainTitle, setMainTitle] = useState(DEFAULT_MAIN_TITLE);
@@ -279,7 +278,6 @@ export default function HomePage() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchTerm(e.target.value);
-      setVisibleHistoryCount(ITEMS_PER_PAGE); // Reset pagination on new search
   }
 
   const findMatchingRule = () => {
@@ -453,7 +451,7 @@ export default function HomePage() {
 
         <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="w-full space-y-8 lg:sticky lg:top-8">
-                <Card className="relative bg-blue-50 border-blue-200">
+                <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Calculator className="h-6 w-6" />
@@ -504,7 +502,7 @@ export default function HomePage() {
                       </div>
 
                       {/* Specific Conditions Section */}
-                       <div className="p-4 border rounded-md bg-white space-y-4">
+                       <div className="p-4 border rounded-md bg-muted/50 space-y-4">
                           <p className="text-sm font-medium text-muted-foreground">Kondisi Spesifik (jika ada)</p>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                             <div className="space-y-2">
@@ -562,7 +560,7 @@ export default function HomePage() {
                           </div>
                       </div>
 
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-white">
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-muted/50">
                           <div className="space-y-2">
                             <Label htmlFor="bidang-bagian">Bidang / Bagian (Opsional)</Label>
                             <Select value={selectedBidang} onValueChange={(v) => {
@@ -628,7 +626,7 @@ export default function HomePage() {
                     <CardContent>
                         {filteredHistory.length > 0 ? (
                             <ul className="space-y-2">
-                                {filteredHistory.slice(0, visibleHistoryCount).map((item, index) => (
+                                {filteredHistory.slice(0, ITEMS_PER_PAGE).map((item, index) => (
                                     <li key={item.id}>
                                         <button
                                             onClick={() => viewHistoryDetails(item)}
@@ -650,7 +648,7 @@ export default function HomePage() {
                                 ))}
                             </ul>
                         ) : (
-                             <Alert className="bg-muted/50 border-dashed">
+                             <Alert>
                                  <FileWarning className="h-4 w-4" />
                                 <AlertTitle>{searchTerm ? "Tidak Ditemukan" : "Riwayat Kosong"}</AlertTitle>
                                 <AlertDescription>
@@ -659,18 +657,6 @@ export default function HomePage() {
                             </Alert>
                         )}
                     </CardContent>
-                    {filteredHistory.length > visibleHistoryCount && (
-                        <CardFooter className="pt-4 border-t">
-                            <Button
-                                variant="secondary"
-                                className="w-full"
-                                onClick={() => setVisibleHistoryCount(prev => prev + ITEMS_PER_PAGE)}
-                            >
-                                <MoreHorizontal className="mr-2 h-4 w-4" />
-                                Muat Lebih Banyak ({visibleHistoryCount}/{filteredHistory.length})
-                            </Button>
-                        </CardFooter>
-                    )}
                 </Card>
             </div>
         </div>
