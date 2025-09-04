@@ -13,8 +13,7 @@ import { taxRules } from "@/data/tax-rules";
 import { departments } from "@/data/departments";
 import { activities } from "@/data/activities";
 import { transactionTypes } from "@/data/transaction-types";
-import { Calculator, Coins, LogIn, History, ArrowRight } from "lucide-react";
-import Image from "next/image";
+import { Calculator, Coins, LogIn, History, ArrowRight, Search } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FileWarning } from "lucide-react";
@@ -28,11 +27,30 @@ type SertifikatKonstruksi = "Punya" | "Tidak Punya";
 
 const HISTORY_STORAGE_KEY = 'calculationHistory';
 
+// This type is used for both history and the full result passed to the next page.
+// Ensure all necessary fields are included.
 type CalculationResult = {
     id: number;
+    namaBidang: string;
+    subKegiatan: string;
     jenisTransaksi: string;
+    wajibPajak: string;
+    fakturPajak: string;
+    asn: string;
+    golongan: string;
+    sertifikatKonstruksi: string;
     nilaiTransaksi: number;
+    jenisPajak: string;
+    tarifPajak: string;
+    nilaiDpp: number;
+    pajakPph: number;
+    kodeKapPph: string;
+    pajakDaerah: number;
+    tarifPpn: string;
+    ppn: number;
+    kodeKapPpn: string;
     totalPajak: number;
+    yangDibayarkan: number;
     createdAt: string;
 };
 
@@ -58,6 +76,7 @@ export default function HomePage() {
   
   const [error, setError] = useState<string>("");
   const [history, setHistory] = useState<CalculationResult[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   useEffect(() => {
     // Clear session storage on initial load to ensure a fresh start
@@ -66,9 +85,23 @@ export default function HomePage() {
     // Load history from local storage
     const storedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
     if (storedHistory) {
-        setHistory(JSON.parse(storedHistory));
+        try {
+            setHistory(JSON.parse(storedHistory));
+        } catch (e) {
+            console.error("Failed to parse history from localStorage", e);
+            setHistory([]);
+        }
     }
   }, []);
+  
+  const filteredHistory = useMemo(() => {
+    if (!searchTerm) {
+        return history;
+    }
+    return history.filter(item => 
+        String(item.id).slice(-6).includes(searchTerm)
+    );
+  }, [history, searchTerm]);
 
   const selectedTransaction = useMemo(() => {
     return taxRules.find(rule => rule.jenisTransaksi === jenisTransaksi && rule.wp === wp);
@@ -96,28 +129,31 @@ export default function HomePage() {
             r.jenisTransaksi === jenisTransaksi &&
             r.wp === wp &&
             r.asn === asnStatus &&
-            (r.golongan === asnGolongan || r.golongan === "N/A")
+            (r.golongan === asnGolongan || r.golongan === "N/A") &&
+            r.status === 'Aktif'
         );
         rule = honorRule;
     } else if (selectedTransaction?.jenisTransaksi.includes("Jasa Konsultasi Konstruksi")) {
         const konstruksiRule = taxRules.find(r => 
             r.jenisTransaksi === jenisTransaksi &&
             r.wp === wp &&
-            r.sertifikatKonstruksi === sertifikatKonstruksi
+            r.sertifikatKonstruksi === sertifikatKonstruksi &&
+            r.status === 'Aktif'
         );
         rule = konstruksiRule;
     } else if (selectedTransaction?.jenisPajak === "PPh 23" && wp === "Badan Usaha") {
          const pph23Rule = taxRules.find(r => 
             r.jenisTransaksi === jenisTransaksi &&
             r.wp === wp &&
-            r.fakturPajak === fakturPajak
+            r.fakturPajak === fakturPajak &&
+            r.status === 'Aktif'
         );
         rule = pph23Rule;
     }
 
 
-    if (!rule) {
-      setError("Kombinasi yang Anda pilih tidak memiliki aturan pajak yang sesuai.");
+    if (!rule || rule.status === 'Tidak Aktif') {
+      setError("Kombinasi yang Anda pilih tidak memiliki aturan pajak yang aktif atau sesuai.");
       return;
     }
 
@@ -129,8 +165,14 @@ export default function HomePage() {
 
     // PPN calculation is done first, as it might affect the DPP for PPh
     if (rule.kenaPPN) {
-        dpp = nilai / 1.11;
-        ppn = dpp * 0.11;
+        // Use dppRatio to calculate DPP from gross value
+        const [numerator, denominator] = rule.dppRatio.split('/').map(Number);
+        if(denominator) {
+            dpp = nilai * (numerator / denominator);
+            ppn = dpp * 0.11; // PPN is 11% of DPP
+        } else {
+            dpp = nilai; // fallback
+        }
     }
 
     // Simple percentage calculation for PPh
@@ -140,11 +182,16 @@ export default function HomePage() {
     }
 
     // Special case for 'Tukang Harian' based on gross value (nilai transaksi)
+    // This logic needs to be precise and based on the PTKP ranges
     if (rule.jenisTransaksi.includes('Tukang Harian')) {
         if (nilai > 450000 && nilai <= 2500000) {
-            pph = (nilai - 450000) * 0.005; // 0.5%
+            pph = (nilai - 450000) * 0.005; // 0.5% on the excess of 450,000
         } else if (nilai > 2500000) {
-            pph = nilai * 0.025; // 2.5%
+             const applicableRule = taxRules.find(r => r.jenisTransaksi.includes('Tukang Harian') && r.ptkp === ">2500000");
+             if(applicableRule) {
+                 const rate = parseFloat(String(applicableRule.tarifPajak).replace('%','')) / 100;
+                 pph = nilai * rate;
+             }
         } else {
             pph = 0;
         }
@@ -156,7 +203,7 @@ export default function HomePage() {
     const totalPajak = pph + ppn;
     const yangDibayarkan = nilai - pph; // In many cases, yang dibayarkan is Nilai Transaksi - PPh
 
-    const resultData = {
+    const resultData: CalculationResult = {
       id: Date.now(),
       namaBidang: selectedBidang || "-",
       subKegiatan: selectedKegiatan || "-",
@@ -186,8 +233,10 @@ export default function HomePage() {
 
     // Save to local storage for history
     const newHistory = [resultData, ...history];
-    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(newHistory.slice(0, 50))); // Keep only the last 50 entries
-    setHistory(newHistory.slice(0, 50));
+    // Keep only the last 50 entries
+    const limitedHistory = newHistory.slice(0, 50);
+    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(limitedHistory)); 
+    setHistory(limitedHistory);
 
 
     router.push('/hasil');
@@ -218,6 +267,7 @@ export default function HomePage() {
   }
   
   const viewHistoryDetails = (item: CalculationResult) => {
+    // Re-stringify the specific history item to be viewed
     sessionStorage.setItem('calculationResult', JSON.stringify(item));
     router.push('/hasil');
   };
@@ -397,19 +447,25 @@ export default function HomePage() {
             </Card>
 
             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                <CardHeader className="flex flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
                         <History className="h-6 w-6" />
-                        Riwayat Perhitungan Terakhir
-                    </CardTitle>
-                    <CardDescription>
-                        50 perhitungan terakhir yang Anda buat akan ditampilkan di sini.
-                    </CardDescription>
+                        <CardTitle>Riwayat Perhitungan Terakhir</CardTitle>
+                    </div>
+                     <div className="relative w-full max-w-xs">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                            placeholder="Cari berdasarkan ID..." 
+                            className="pl-9"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                         />
+                    </div>
                 </CardHeader>
                 <CardContent>
-                    {history.length > 0 ? (
-                        <ul className="space-y-2">
-                            {history.map((item) => (
+                    {filteredHistory.length > 0 ? (
+                        <ul className="space-y-2 max-h-96 overflow-y-auto">
+                            {filteredHistory.map((item) => (
                                 <li key={item.id}>
                                     <button
                                         onClick={() => viewHistoryDetails(item)}
@@ -430,9 +486,9 @@ export default function HomePage() {
                     ) : (
                          <Alert className="bg-muted/50 border-dashed">
                              <FileWarning className="h-4 w-4" />
-                            <AlertTitle>Riwayat Kosong</AlertTitle>
+                            <AlertTitle>{searchTerm ? "Tidak Ditemukan" : "Riwayat Kosong"}</AlertTitle>
                             <AlertDescription>
-                                Anda belum melakukan perhitungan apapun. Hasil perhitungan akan muncul di sini.
+                                {searchTerm ? `Tidak ada riwayat yang cocok dengan ID "${searchTerm}".` : "Anda belum melakukan perhitungan apapun. Hasil akan muncul di sini."}
                             </AlertDescription>
                         </Alert>
                     )}
