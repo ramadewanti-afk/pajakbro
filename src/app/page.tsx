@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -516,12 +515,12 @@ export default function HomePage() {
             </div>
             <div className="w-full space-y-8 lg:sticky lg:top-8">
                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between gap-4">
-                        <div className="flex items-center gap-2">
+                    <CardHeader>
+                        <div className="flex items-center gap-2 mb-4">
                             <History className="h-6 w-6" />
                             <CardTitle>Riwayat Perhitungan Terakhir</CardTitle>
                         </div>
-                         <div className="relative w-full max-w-xs">
+                         <div className="relative w-full">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input 
                                 placeholder="Cari berdasarkan ID..." 
@@ -581,3 +580,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
