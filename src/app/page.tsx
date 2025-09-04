@@ -55,6 +55,9 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const STORAGE_KEY = 'pajakBroFormData';
+const HISTORY_KEY = 'pajakBroHistory';
+
 export default function PajakBroCalculator() {
   const [isPending, startTransition] = useTransition();
   const [isCalculating, startCalculating] = useTransition();
@@ -78,24 +81,55 @@ export default function PajakBroCalculator() {
     },
   });
 
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        form.reset(parsedData);
+      }
+    } catch (e) {
+      console.error("Failed to load form data from local storage", e);
+    }
+  }, [form]);
+
   const watchedValues = form.watch();
 
+  // Save to localStorage on change
+  useEffect(() => {
+    try {
+      const a = setTimeout(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(watchedValues));
+      }, 500)
+    } catch(e) {
+      console.error("Failed to save form data to local storage", e);
+    }
+  }, [watchedValues]);
+
+
   const handleCalculateTax = () => {
-    startCalculating(async () => {
-        const result = await calculateTaxAction(watchedValues);
-        if (result.error) {
-            setError(result.error);
-        } else {
-            setPph21(result.pph21);
-            setPpn(result.ppn);
-            setTotalPajak(result.totalPajak);
-            setTarifPajak(result.tarifPajak);
-        }
+    // Only calculate if form is valid
+    form.trigger().then(isValid => {
+      if(isValid) {
+        startCalculating(async () => {
+            const result = await calculateTaxAction(watchedValues);
+            if (result.error) {
+                setError(result.error);
+            } else {
+                setPph21(result.pph21);
+                setPpn(result.ppn);
+                setTotalPajak(result.totalPajak);
+                setTarifPajak(result.tarifPajak);
+            }
+        });
+      }
     });
   };
 
   useEffect(() => {
-    handleCalculateTax();
+    const debounce = setTimeout(handleCalculateTax, 300);
+    return () => clearTimeout(debounce);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     watchedValues.nilaiTransaksi, 
@@ -119,6 +153,26 @@ export default function PajakBroCalculator() {
         setPpn(result.ppn ?? 0);
         setTotalPajak(result.totalPajak ?? 0);
         setTarifPajak(result.tarifPajak ?? 0);
+        
+        // Save to history
+        try {
+          const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+          const newHistoryEntry = {
+            id: new Date().toISOString(),
+            tanggal: new Date().toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-'),
+            jenisTransaksi: watchedValues.jenisTransaksi,
+            wajibPajak: watchedValues.wajibPajak,
+            nilai: watchedValues.nilaiTransaksi,
+            pph: result.pph21 ?? 0,
+            ppn: result.ppn ?? 0,
+            total: result.totalPajak ?? 0,
+            statusKepatuhan: result.complianceReport?.toLowerCase().includes('compliant') ? 'Compliant' : 'Needs Review',
+          };
+          const updatedHistory = [newHistoryEntry, ...history];
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
+        } catch (e) {
+          console.error("Failed to save history to local storage", e);
+        }
       }
     });
   };
@@ -168,7 +222,7 @@ export default function PajakBroCalculator() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Jenis Transaksi</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Pilih jenis transaksi" />
@@ -204,7 +258,7 @@ export default function PajakBroCalculator() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Wajib Pajak</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Pilih jenis wajib pajak" />
@@ -257,7 +311,7 @@ export default function PajakBroCalculator() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Golongan</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value}>
+                             <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Pilih Golongan ASN"/>
@@ -352,7 +406,7 @@ export default function PajakBroCalculator() {
                 </div>
               </div>
               <div className="pt-6 text-center">
-                 <Button onClick={handleCheckCompliance} disabled={isPending || isCalculating} className="w-full md:w-auto">
+                 <Button onClick={handleCheckCompliance} disabled={isPending || isCalculating || !form.formState.isValid} className="w-full md:w-auto">
                     {isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -393,3 +447,5 @@ export default function PajakBroCalculator() {
     </div>
   );
 }
+
+    
