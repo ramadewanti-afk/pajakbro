@@ -17,7 +17,7 @@ export default function RiwayatPerhitunganPage() {
 
   const formatCurrency = (value: number) => {
     if (typeof value !== 'number') return '0';
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
+    return new Intl.NumberFormat('id-ID', { useGrouping: false }).format(value);
   }
 
   const formatDate = (dateString: string) => {
@@ -78,8 +78,8 @@ export default function RiwayatPerhitunganPage() {
                 <TableRow key={item.id}>
                   <TableCell className="font-mono text-xs">#{String(item.id).slice(-6)}</TableCell>
                   <TableCell className="font-medium max-w-xs truncate">{item.jenisTransaksi}</TableCell>
-                  <TableCell>{formatCurrency(item.nilaiTransaksi)}</TableCell>
-                  <TableCell>{formatCurrency(item.totalPajak)}</TableCell>
+                  <TableCell>Rp {formatCurrency(item.nilaiTransaksi)}</TableCell>
+                  <TableCell>Rp {formatCurrency(item.totalPajak)}</TableCell>
                   <TableCell className="text-muted-foreground text-xs">{formatDate(item.createdAt)}</TableCell>
                   <TableCell>
                      {item.status === 'Aktif' ? (

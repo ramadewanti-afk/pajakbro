@@ -31,7 +31,7 @@ const ITEMS_PER_PAGE = 10;
 // Function to format currency
 const formatCurrency = (value: number) => {
     if (typeof value !== 'number') return 'Rp 0';
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
+    return 'Rp ' + new Intl.NumberFormat('id-ID', { useGrouping: false }).format(value);
 }
 
 // Result display component
@@ -542,3 +542,4 @@ export default function HomePage() {
     
 
     
+

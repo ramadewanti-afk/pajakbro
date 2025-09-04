@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState, Suspense } from 'react';
@@ -77,7 +78,7 @@ function HasilContent() {
 
     const formatCurrency = (value: number) => {
         if (typeof value !== 'number') return '0';
-        return new Intl.NumberFormat('id-ID', { style: 'decimal' }).format(value);
+        return new Intl.NumberFormat('id-ID', { useGrouping: false }).format(value);
     }
 
     if (loading || !data) {
