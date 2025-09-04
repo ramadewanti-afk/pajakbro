@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, ListTree, LogOut, ShieldCheck, BookType, Briefcase, ClipboardList } from "lucide-react";
+import { LayoutDashboard, ListTree, LogOut, ShieldCheck, BookType, Briefcase, ClipboardList, Users, Settings } from "lucide-react";
 import React from 'react';
 import Link from 'next/link';
 
@@ -49,6 +49,16 @@ export default function AdminLayout({
                     </SidebarMenuButton>
                  </Link>
               </SidebarMenuItem>
+               <SidebarMenuItem>
+                 <Link href="/admin/manajemen-pengguna" passHref>
+                    <SidebarMenuButton
+                      isActive={pathname === '/admin/manajemen-pengguna'}
+                    >
+                      <Users />
+                      Manajemen Pengguna
+                    </SidebarMenuButton>
+                 </Link>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                  <Link href="/admin/bidang" passHref>
                     <SidebarMenuButton
@@ -69,6 +79,16 @@ export default function AdminLayout({
                     </SidebarMenuButton>
                  </Link>
               </SidebarMenuItem>
+                 <SidebarMenuItem>
+                 <Link href="/admin/jenis-transaksi" passHref>
+                    <SidebarMenuButton
+                      isActive={pathname === '/admin/jenis-transaksi'}
+                    >
+                      <BookType />
+                      Jenis Transaksi
+                    </SidebarMenuButton>
+                  </Link>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                  <Link href="/admin/aturan-pajak" passHref>
                     <SidebarMenuButton
@@ -79,15 +99,15 @@ export default function AdminLayout({
                     </SidebarMenuButton>
                  </Link>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                 <Link href="/admin/jenis-transaksi" passHref>
+               <SidebarMenuItem>
+                 <Link href="/admin/pengaturan" passHref>
                     <SidebarMenuButton
-                      isActive={pathname === '/admin/jenis-transaksi'}
+                      isActive={pathname === '/admin/pengaturan'}
                     >
-                      <BookType />
-                      Jenis Transaksi
+                      <Settings />
+                      Pengaturan
                     </SidebarMenuButton>
-                  </Link>
+                 </Link>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
