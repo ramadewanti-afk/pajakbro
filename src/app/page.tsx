@@ -592,7 +592,7 @@ export default function HomePage() {
                 </Card>
             </div>
             <div className="w-full space-y-8">
-                 <Card className="bg-red-50 border-red-200">
+                 <Card>
                     <CardHeader className="space-y-4">
                         <div className="flex items-center gap-2">
                             <History className="h-6 w-6" />
@@ -662,4 +662,3 @@ export default function HomePage() {
   );
 }
 
-    
