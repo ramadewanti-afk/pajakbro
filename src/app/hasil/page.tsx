@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams, Suspense } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -54,8 +54,8 @@ function HasilContent() {
             const encodedData = btoa(JSON.stringify(resultData));
             setQrCodeUrl(`${window.location.origin}/hasil?data=${encodedData}`);
         } else {
-            router.push('/');
-            return;
+            // Do not redirect immediately, let the render path handle it
+            // This can prevent issues with hydration or server/client mismatch
         }
 
         const storedLogoUrl = localStorage.getItem(LOGO_STORAGE_KEY);
@@ -79,9 +79,13 @@ function HasilContent() {
     }
     
     if (!data) {
+        // Redirect only on the client-side after determining data is missing
+        if (typeof window !== 'undefined') {
+            router.push('/');
+        }
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <p>Data perhitungan tidak ditemukan.</p>
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4">
+                <p>Data perhitungan tidak ditemukan. Anda akan diarahkan kembali.</p>
                  <Button onClick={() => router.push('/')}>Kembali ke Kalkulator</Button>
             </div>
         )
