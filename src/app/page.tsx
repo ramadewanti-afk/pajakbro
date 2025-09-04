@@ -28,6 +28,7 @@ type AsnStatus = "ASN" | "NON ASN" | "N/A";
 type AsnGolongan = "I" | "II" | "III" | "IV" | "N/A";
 type FakturPajak = "Punya" | "Tidak Punya" | "N/A";
 type SertifikatKonstruksi = "Punya" | "Tidak Punya" | "N/A";
+type DikenakanPpn = "Ya" | "Tidak" | "N/A";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -210,6 +211,7 @@ export default function HomePage() {
   const [asnStatus, setAsnStatus] = useState<AsnStatus>("N/A");
   const [asnGolongan, setAsnGolongan] = useState<AsnGolongan>("N/A");
   const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState<SertifikatKonstruksi>("N/A");
+  const [dikenakanPpn, setDikenakanPpn] = useState<DikenakanPpn>("N/A");
   
   // Calculation and history state
   const [error, setError] = useState<string>("");
@@ -237,12 +239,18 @@ export default function HomePage() {
   }
 
   const findMatchingRule = () => {
-    // This logic needs to be robust to find the most specific rule.
-    const candidates = taxRules.filter(r => 
-        r.status === 'Aktif' &&
-        r.jenisTransaksi === jenisTransaksi && 
-        r.wp === wp
-    );
+    const ppnChoice = dikenakanPpn === 'Ya' ? true : dikenakanPpn === 'Tidak' ? false : null;
+
+    const candidates = taxRules.filter(r => {
+        if (r.status !== 'Aktif' || r.jenisTransaksi !== jenisTransaksi || r.wp !== wp) {
+            return false;
+        }
+        // If user has made a choice on PPN, filter by it.
+        if (ppnChoice !== null && r.kenaPPN !== ppnChoice) {
+            return false;
+        }
+        return true;
+    });
 
     if (candidates.length === 0) return null;
 
@@ -292,7 +300,7 @@ export default function HomePage() {
     setError("");
     performCalculation(nilai, rule);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
+  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi, dikenakanPpn]);
 
   
  const performCalculation = (nilai: number, rule: Transaction) => {
@@ -391,6 +399,7 @@ export default function HomePage() {
       setAsnStatus("N/A");
       setAsnGolongan("N/A");
       setSertifikatKonstruksi("N/A");
+      setDikenakanPpn("N/A");
       setError("");
       setJenisTransaksi("");
       setCalculationResult(null);
@@ -408,6 +417,7 @@ export default function HomePage() {
       setAsnStatus("N/A");
       setAsnGolongan("N/A");
       setSertifikatKonstruksi("N/A");
+      setDikenakanPpn("N/A");
       setError("");
       setCalculationResult(null);
   }
@@ -520,6 +530,27 @@ export default function HomePage() {
                        <div>
                           <Label className="text-sm text-muted-foreground">Kondisi Spesifik (jika ada)</Label>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-white mt-2">
+                            <div className="space-y-2">
+                              <Label>Dikenakan PPN?</Label>
+                              <RadioGroup 
+                                value={dikenakanPpn} 
+                                onValueChange={(v) => setDikenakanPpn(v as DikenakanPpn)} 
+                                className="flex space-x-4 pt-2"
+                              >
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Ya" id="ppn-ya" />
+                                    <Label htmlFor="ppn-ya">Ya</Label>
+                                 </div>
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Tidak" id="ppn-tidak" />
+                                    <Label htmlFor="ppn-tidak">Tidak</Label>
+                                 </div>
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="N/A" id="ppn-na" />
+                                    <Label htmlFor="ppn-na">N/A</Label>
+                                 </div>
+                              </RadioGroup>
+                            </div>
                             <div className="space-y-2">
                               <Label>Punya Faktur Pajak?</Label>
                               <RadioGroup 
@@ -692,11 +723,5 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
-
-    
-
-    
 
     
