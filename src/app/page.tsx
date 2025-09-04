@@ -24,10 +24,10 @@ import { cn } from "@/lib/utils";
 
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
-type AsnStatus = "ASN" | "NON ASN" | "";
-type AsnGolongan = "I" | "II" | "III" | "IV" | "";
-type FakturPajak = "Punya" | "Tidak Punya" | "";
-type SertifikatKonstruksi = "Punya" | "Tidak Punya" | "";
+type AsnStatus = "ASN" | "NON ASN" | "N/A";
+type AsnGolongan = "I" | "II" | "III" | "IV" | "N/A";
+type FakturPajak = "Punya" | "Tidak Punya" | "N/A";
+type SertifikatKonstruksi = "Punya" | "Tidak Punya" | "N/A";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -155,7 +155,7 @@ const TransactionCombobox = ({
                   key={transaction.id}
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start text-left h-auto",
+                    "w-full justify-start text-left h-auto py-2 whitespace-normal",
                     value === transaction.name && "bg-accent text-accent-foreground"
                   )}
                   onClick={() => {
@@ -165,11 +165,11 @@ const TransactionCombobox = ({
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "mr-2 h-4 w-4 shrink-0",
                       value === transaction.name ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  <span className="truncate">{transaction.name}</span>
+                  <span className="flex-1">{transaction.name}</span>
                 </Button>
               ))
              ) : (
@@ -206,10 +206,10 @@ export default function HomePage() {
 
 
   // Dynamic fields for specific conditions
-  const [fakturPajak, setFakturPajak] = useState<FakturPajak>("");
-  const [asnStatus, setAsnStatus] = useState<AsnStatus>("");
-  const [asnGolongan, setAsnGolongan] = useState<AsnGolongan>("");
-  const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState<SertifikatKonstruksi>("");
+  const [fakturPajak, setFakturPajak] = useState<FakturPajak>("N/A");
+  const [asnStatus, setAsnStatus] = useState<AsnStatus>("N/A");
+  const [asnGolongan, setAsnGolongan] = useState<AsnGolongan>("N/A");
+  const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState<SertifikatKonstruksi>("N/A");
   
   // Calculation and history state
   const [error, setError] = useState<string>("");
@@ -387,10 +387,10 @@ export default function HomePage() {
   }, [transactionTypes]);
   
   const resetDynamicFields = () => {
-      setFakturPajak("");
-      setAsnStatus("");
-      setAsnGolongan("");
-      setSertifikatKonstruksi("");
+      setFakturPajak("N/A");
+      setAsnStatus("N/A");
+      setAsnGolongan("N/A");
+      setSertifikatKonstruksi("N/A");
       setError("");
       setJenisTransaksi("");
       setCalculationResult(null);
@@ -404,10 +404,10 @@ export default function HomePage() {
   const handleTransactionChange = (value: string) => {
       setJenisTransaksi(value);
       // Reset specific fields when transaction changes, but keep WP and amount
-      setFakturPajak("");
-      setAsnStatus("");
-      setAsnGolongan("");
-      setSertifikatKonstruksi("");
+      setFakturPajak("N/A");
+      setAsnStatus("N/A");
+      setAsnGolongan("N/A");
+      setSertifikatKonstruksi("N/A");
       setError("");
       setCalculationResult(null);
   }
@@ -535,6 +535,10 @@ export default function HomePage() {
                                     <RadioGroupItem value="Tidak Punya" id="fp-tidak" />
                                     <Label htmlFor="fp-tidak">Tidak</Label>
                                  </div>
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="N/A" id="fp-na" />
+                                    <Label htmlFor="fp-na">N/A</Label>
+                                 </div>
                               </RadioGroup>
                             </div>
                             <div className="space-y-2">
@@ -544,6 +548,7 @@ export default function HomePage() {
                                     <SelectContent>
                                         <SelectItem value="ASN">ASN</SelectItem>
                                         <SelectItem value="NON ASN">NON ASN</SelectItem>
+                                        <SelectItem value="N/A">N/A</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -556,6 +561,7 @@ export default function HomePage() {
                                         <SelectItem value="II">II</SelectItem>
                                         <SelectItem value="III">III</SelectItem>
                                         <SelectItem value="IV">IV</SelectItem>
+                                        <SelectItem value="N/A">N/A</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -573,6 +579,10 @@ export default function HomePage() {
                                  <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="Tidak Punya" id="sk-tidak" />
                                     <Label htmlFor="sk-tidak">Tidak</Label>
+                                 </div>
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="N/A" id="sk-na" />
+                                    <Label htmlFor="sk-na">N/A</Label>
                                  </div>
                               </RadioGroup>
                             </div>
@@ -682,6 +692,8 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
 
     
 
