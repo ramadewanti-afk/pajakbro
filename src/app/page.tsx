@@ -280,7 +280,7 @@ export default function HomePage() {
     const candidates = taxRules.filter(r => {
         if (r.status !== 'Aktif') return false;
         
-        // Primary conditions
+        // Primary conditions that MUST match
         if (r.jenisTransaksi !== jenisTransaksi) return false;
         if (r.wp !== wp) return false;
 
@@ -289,30 +289,28 @@ export default function HomePage() {
             return false;
         }
         
-        // Secondary conditions that are not N/A must match
-        if (r.fakturPajak !== 'N/A' && r.fakturPajak !== fakturPajak) return false;
-        if (r.asn !== 'N/A' && r.asn !== asnStatus) return false;
-        if (r.golongan !== 'N/A' && r.golongan !== asnGolongan) return false;
-        if (r.sertifikatKonstruksi !== 'N/A' && r.sertifikatKonstruksi !== sertifikatKonstruksi) return false;
-
         return true;
     });
 
+    // From the candidates, find the most specific match
     if (candidates.length === 0) return null;
+    if (candidates.length === 1) return candidates[0];
 
-    // Score candidates based on how many specific (non-"N/A") conditions they match
+    // If multiple candidates remain, we need to score them based on secondary conditions.
+    // A more specific rule (e.g., one that specifies "ASN" instead of "N/A") gets a higher score.
     const scoredCandidates = candidates.map(rule => {
         let score = 0;
-        if (rule.fakturPajak !== 'N/A') score++;
-        if (rule.asn !== 'N/A') score++;
-        if (rule.golongan !== 'N/A') score++;
-        if (rule.sertifikatKonstruksi !== 'N/A') score++;
+        if (rule.fakturPajak !== 'N/A' && rule.fakturPajak === fakturPajak) score++;
+        if (rule.asn !== 'N/A' && rule.asn === asnStatus) score++;
+        if (rule.golongan !== 'N/A' && rule.golongan === asnGolongan) score++;
+        if (rule.sertifikatKonstruksi !== 'N/A' && rule.sertifikatKonstruksi === sertifikatKonstruksi) score++;
         return { rule, score };
     });
 
     // Sort by score descending to get the most specific match
     scoredCandidates.sort((a, b) => b.score - a.score);
     
+    // Return the rule with the highest score
     return scoredCandidates[0].rule;
   };
 
@@ -330,13 +328,12 @@ export default function HomePage() {
     if (!rule) {
       setError("Kombinasi yang Anda pilih tidak memiliki aturan pajak yang aktif atau sesuai.");
       setCalculationResult(null);
-      return;
+    } else {
+      setError("");
+      performCalculation(nilai, rule);
     }
-
-    setError("");
-    performCalculation(nilai, rule);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nilaiTransaksi, jenisTransaksi, wp]);
+  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
 
   
  const performCalculation = (nilai: number, rule: Transaction) => {
@@ -760,3 +757,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
