@@ -113,7 +113,7 @@ function HasilContent() {
                             <TableBody>
                                 <TableRow>
                                     <TableCell className="font-semibold w-1/3">ID Transaksi</TableCell>
-                                    <TableCell className="w-2/3">: {data.id}</TableCell>
+                                    <TableCell className="w-2/3">: #{String(data.id).slice(-6)}</TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell className="font-semibold">Tanggal & Waktu Dibuat</TableCell>
@@ -263,5 +263,3 @@ export default function HasilPage() {
         </Suspense>
     )
 }
-
-    
