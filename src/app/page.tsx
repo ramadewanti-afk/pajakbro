@@ -610,12 +610,15 @@ export default function HomePage() {
                     </CardHeader>
                     <CardContent>
                         {filteredHistory.length > 0 ? (
-                            <ul className="space-y-2 pr-2">
-                                {filteredHistory.slice(0, visibleHistoryCount).map((item) => (
+                            <ul className="space-y-2">
+                                {filteredHistory.slice(0, visibleHistoryCount).map((item, index) => (
                                     <li key={item.id}>
                                         <button
                                             onClick={() => viewHistoryDetails(item)}
-                                            className="w-full text-left p-3 rounded-md hover:bg-muted transition-colors border flex items-center justify-between"
+                                            className={cn(
+                                                "w-full text-left p-3 rounded-md hover:bg-muted transition-colors border flex items-center justify-between",
+                                                index % 2 === 1 && "bg-muted/50" // Apply alternating color
+                                            )}
                                         >
                                             <div>
                                                 <p className="font-semibold truncate">
@@ -658,3 +661,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
