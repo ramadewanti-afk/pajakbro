@@ -142,7 +142,7 @@ export default function PajakBroCalculator() {
             Kalkulator Pajak Lengkap untuk Keperluan Dinas
           </p>
           <Button asChild variant="outline" className="absolute top-0 right-0">
-            <Link href="/admin">
+            <Link href="/login">
               <LogIn className="mr-2" /> Admin
             </Link>
           </Button>
