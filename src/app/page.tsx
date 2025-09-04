@@ -281,9 +281,18 @@ export default function HomePage() {
             return false;
         }
 
-        // Check transaction value against the rule's PTKP
+        // Check transaction value against the rule's PTKP. This is still useful for non-PPN related thresholds.
         if (!checkPtkp(nilai, r.ptkp)) {
             return false;
+        }
+        
+        // Filter by the user's explicit PPN choice
+        if (dikenakanPpn !== 'N/A') {
+            const ruleKenaPpn = r.kenaPPN;
+            const userPilihPpn = dikenakanPpn === 'Ya';
+            if (ruleKenaPpn !== userPilihPpn) {
+                return false;
+            }
         }
         
         return true;
@@ -298,12 +307,6 @@ export default function HomePage() {
         if (rule.asn !== 'N/A' && rule.asn === asnStatus) score++;
         if (rule.golongan !== 'N/A' && rule.golongan === asnGolongan) score++;
         if (rule.sertifikatKonstruksi !== 'N/A' && rule.sertifikatKonstruksi === sertifikatKonstruksi) score++;
-        // Add score for PPN match
-        if (dikenakanPpn !== 'N/A') {
-            if ((dikenakanPpn === 'Ya' && rule.kenaPPN) || (dikenakanPpn === 'Tidak' && !rule.kenaPPN)) {
-                score++;
-            }
-        }
         
         // Also score based on how many "N/A" the rule has, lower is better (more specific)
         const naCount = (rule.fakturPajak === 'N/A' ? 1 : 0) + (rule.asn === 'N/A' ? 1 : 0) + (rule.golongan === 'N/A' ? 1 : 0) + (rule.sertifikatKonstruksi === 'N/A' ? 1 : 0);
