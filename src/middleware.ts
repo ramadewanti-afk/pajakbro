@@ -3,14 +3,15 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const authCookie = request.cookies.get('auth');
+  const { pathname } = request.nextUrl;
 
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  if (pathname.startsWith('/admin')) {
     if (!authCookie || authCookie.value !== 'true') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 
-  if (request.nextUrl.pathname === '/login') {
+  if (pathname === '/login') {
     if (authCookie && authCookie.value === 'true') {
        return NextResponse.redirect(new URL('/admin', request.url));
     }
