@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, ListTree, LogOut, ShieldCheck, BookType, Briefcase, ClipboardList } from "lucide-react";
 import React from 'react';
+import Link from 'next/link';
 
 export default function AdminLayout({
   children,
@@ -39,49 +40,54 @@ export default function AdminLayout({
           <SidebarContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  href="/admin"
-                  isActive={pathname === '/admin'}
-                >
-                  <LayoutDashboard />
-                  Dasbor
-                </SidebarMenuButton>
+                 <Link href="/admin" passHref>
+                    <SidebarMenuButton
+                      isActive={pathname === '/admin'}
+                    >
+                      <LayoutDashboard />
+                      Dasbor
+                    </SidebarMenuButton>
+                 </Link>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  href="/admin/bidang"
-                  isActive={pathname === '/admin/bidang'}
-                >
-                  <Briefcase />
-                  Manajemen Bidang/Bagian
-                </SidebarMenuButton>
+                 <Link href="/admin/bidang" passHref>
+                    <SidebarMenuButton
+                      isActive={pathname === '/admin/bidang'}
+                    >
+                      <Briefcase />
+                      Manajemen Bidang/Bagian
+                    </SidebarMenuButton>
+                 </Link>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  href="/admin/kegiatan"
-                  isActive={pathname === '/admin/kegiatan'}
-                >
-                  <ClipboardList />
-                  Manajemen Subkegiatan
-                </SidebarMenuButton>
+                 <Link href="/admin/kegiatan" passHref>
+                    <SidebarMenuButton
+                      isActive={pathname === '/admin/kegiatan'}
+                    >
+                      <ClipboardList />
+                      Manajemen Subkegiatan
+                    </SidebarMenuButton>
+                 </Link>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  href="/admin/aturan-pajak"
-                  isActive={pathname === '/admin/aturan-pajak'}
-                >
-                  <ListTree />
-                  Master Data Aturan Pajak
-                </SidebarMenuButton>
+                 <Link href="/admin/aturan-pajak" passHref>
+                    <SidebarMenuButton
+                      isActive={pathname === '/admin/aturan-pajak'}
+                    >
+                      <ListTree />
+                      Master Data Aturan Pajak
+                    </SidebarMenuButton>
+                 </Link>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  href="/admin/jenis-transaksi"
-                  isActive={pathname === '/admin/jenis-transaksi'}
-                >
-                  <BookType />
-                  Jenis Transaksi
-                </SidebarMenuButton>
+                 <Link href="/admin/jenis-transaksi" passHref>
+                    <SidebarMenuButton
+                      isActive={pathname === '/admin/jenis-transaksi'}
+                    >
+                      <BookType />
+                      Jenis Transaksi
+                    </SidebarMenuButton>
+                  </Link>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
