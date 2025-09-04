@@ -1,3 +1,4 @@
+'use server';
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -21,5 +22,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/login'],
+  matcher: ['/admin', '/admin/:path*', '/login'],
 }
