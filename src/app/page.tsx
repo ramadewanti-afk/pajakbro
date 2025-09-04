@@ -248,6 +248,7 @@ export default function HomePage() {
 
   // Calculation and history state
   const [error, setError] = useState<string>("");
+  const [infoMessage, setInfoMessage] = useState<string>("");
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
   
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -280,13 +281,14 @@ export default function HomePage() {
         if (r.status !== 'Aktif' || r.jenisTransaksi !== jenisTransaksi || r.wp !== wp) {
             return false;
         }
-
-        // Check transaction value against the rule's PTKP. This is still useful for non-PPN related thresholds.
+        
+        // This is the key change: check PTKP for all rules now
         if (!checkPtkp(nilai, r.ptkp)) {
             return false;
         }
-        
-        // Filter by the user's explicit PPN choice
+
+        // If user explicitly chose PPN, filter by that.
+        // If they chose N/A, this condition is skipped, and PTKP decides.
         if (dikenakanPpn !== 'N/A') {
             const ruleKenaPpn = r.kenaPPN;
             const userPilihPpn = dikenakanPpn === 'Ya';
@@ -447,6 +449,7 @@ export default function HomePage() {
       setSertifikatKonstruksi("N/A");
       setDikenakanPpn("N/A");
       setError("");
+      setInfoMessage("");
       setCalculationResult(null);
   }
 
@@ -459,6 +462,18 @@ export default function HomePage() {
       setJenisTransaksi(value);
       // Reset specific fields when transaction changes, but keep WP and amount
       resetDynamicFields();
+      
+      // Find and set info message based on PTKP thresholds
+      const rulesForTransaction = taxRules.filter(r => r.jenisTransaksi === value);
+      const ptkpRule = rulesForTransaction.find(r => r.ptkp && r.ptkp.startsWith('>'));
+      
+      if (ptkpRule) {
+          const ptkpValue = ptkpRule.ptkp.replace(/[>=]/g, '');
+          const formattedValue = formatCurrency(parseInt(ptkpValue, 10));
+          setInfoMessage(`Info: Untuk transaksi ini, nilai di atas ${formattedValue} akan dikenai PPh/PPN sesuai aturan yang berlaku.`);
+      } else {
+          setInfoMessage(""); // Clear message if no threshold rule found
+      }
   }
   
   const viewHistoryDetails = (item: CalculationResult) => {
@@ -564,6 +579,15 @@ export default function HomePage() {
                         </div>
                       </div>
                       
+                       {infoMessage && (
+                        <Alert variant="default" className="bg-blue-100 border-blue-200 text-blue-800">
+                           <Info className="h-4 w-4 text-blue-700" />
+                           <AlertDescription className="text-xs">
+                                {infoMessage}
+                           </AlertDescription>
+                        </Alert>
+                      )}
+
                       <Separator />
 
                        <div>
@@ -586,7 +610,7 @@ export default function HomePage() {
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="N/A" id="ppn-na" />
-                                        <Label htmlFor="ppn-na">N/A</Label>
+                                        <Label htmlFor="ppn-na">Otomatis</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
