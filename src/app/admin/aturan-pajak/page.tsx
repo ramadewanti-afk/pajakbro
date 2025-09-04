@@ -185,7 +185,14 @@ const RuleFormDialog = ({
                     </div>
                     <div className="space-y-1.5">
                         <Label>DPP Rasio</Label>
-                        <Input value={formData.dppRatio} onChange={(e) => handleChange('dppRatio', e.target.value)} placeholder="Contoh: 100/111 atau 100/100" />
+                        <Select value={formData.dppRatio} onValueChange={(v) => handleChange('dppRatio', v)}>
+                            <SelectTrigger><SelectValue placeholder="Pilih Rasio DPP" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="100/100">100/100 (Tanpa PPN)</SelectItem>
+                                <SelectItem value="100/110">100/110 (Termasuk Pajak Daerah 10%)</SelectItem>
+                                <SelectItem value="100/111">100/111 (Termasuk PPN 11%)</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="space-y-1.5">
                         <Label>Tarif Pajak</Label>
@@ -377,5 +384,3 @@ export default function AturanPajakPage() {
     </>
   );
 }
-
-    
