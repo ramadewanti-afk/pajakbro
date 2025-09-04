@@ -87,7 +87,7 @@ export default function AdminLayout({
           </SidebarContent>
           <SidebarFooter>
              <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/')}>
-                <LogOut />
+                <LogOut className="mr-2 h-4 w-4" />
                 <span>Logout</span>
             </Button>
           </SidebarFooter>
