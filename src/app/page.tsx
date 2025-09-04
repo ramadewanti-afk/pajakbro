@@ -17,8 +17,6 @@ import { calculationHistory, CalculationResult } from "@/data/history";
 import { Calculator, Coins, LogIn, History, ArrowRight, Search, FileWarning, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import Image from 'next/image';
-
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
 type AsnStatus = "ASN" | "NON ASN";
@@ -252,8 +250,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen w-full bg-background">
-        <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center min-h-screen p-4 sm:p-6 lg:p-8">
-            <div className="w-full max-w-2xl mx-auto lg:mx-0 space-y-8">
+        <div className="container mx-auto grid lg:grid-cols-2 gap-8 items-start min-h-screen p-4 sm:p-6 lg:p-8">
+            <div className="w-full space-y-8 lg:sticky lg:top-8">
                 <Card className="border-2 relative">
                     <CardHeader className="text-center">
                         <div className="absolute top-4 right-4 flex gap-2">
@@ -416,8 +414,9 @@ export default function HomePage() {
                       </Button>
                     </CardFooter>
                 </Card>
-
-                <Card>
+            </div>
+            <div className="w-full space-y-8 lg:sticky lg:top-8">
+                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-2">
                             <History className="h-6 w-6" />
@@ -435,7 +434,7 @@ export default function HomePage() {
                     </CardHeader>
                     <CardContent>
                         {filteredHistory.length > 0 ? (
-                            <ul className="space-y-2 max-h-[50vh] overflow-y-auto pr-2">
+                            <ul className="space-y-2 max-h-[70vh] overflow-y-auto pr-2">
                                 {filteredHistory.slice(0, visibleHistoryCount).map((item) => (
                                     <li key={item.id}>
                                         <button
@@ -478,19 +477,7 @@ export default function HomePage() {
                     )}
                 </Card>
             </div>
-             <div className="hidden lg:flex items-center justify-center">
-                <Image
-                    src="https://picsum.photos/800/1200"
-                    width={800}
-                    height={1200}
-                    alt="Ilustrasi Kalkulator Pajak"
-                    className="rounded-lg shadow-xl object-cover w-full h-auto max-h-[90vh]"
-                    data-ai-hint="tax calculation"
-                />
-            </div>
         </div>
     </div>
   );
 }
-
-    
