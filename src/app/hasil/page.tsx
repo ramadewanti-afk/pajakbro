@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState, Suspense } from 'react';
@@ -270,3 +271,5 @@ export default function HasilPage() {
         </Suspense>
     )
 }
+
+    
