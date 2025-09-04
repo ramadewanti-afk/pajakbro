@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { taxRules as initialTaxRules, Transaction } from "@/data/tax-rules";
-import { transactionTypes } from "@/data/transaction-types";
+import { transactionTypes as initialTransactionTypes, TransactionType } from "@/data/transaction-types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -31,6 +31,7 @@ const RuleFormDialog = ({
   rule: Partial<Transaction> | null;
 }) => {
   const [formData, setFormData] = React.useState<Partial<Transaction>>({});
+  const [transactionTypes] = useLocalStorage<TransactionType[]>("transactionTypes", initialTransactionTypes);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -376,3 +377,5 @@ export default function AturanPajakPage() {
     </>
   );
 }
+
+    
