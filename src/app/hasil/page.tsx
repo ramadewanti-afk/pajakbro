@@ -235,7 +235,8 @@ function HasilContent() {
                                 </TableRow>
                                 <TableRow className="bg-blue-100 font-bold">
                                     <TableCell>Pajak PPh</TableCell>
-                                    <TableCell>: Rp {formatCurrency(data.pajakPph)}</TableCell>                            </TableRow>
+                                    <TableCell>: Rp {formatCurrency(data.pajakPph)}</TableCell>                            
+                                </TableRow>
                                 <TableRow>
                                     <TableCell>Kode KAP E-Billing PPh</TableCell>
                                     <TableCell>: {data.kodeKapPph}</TableCell>
