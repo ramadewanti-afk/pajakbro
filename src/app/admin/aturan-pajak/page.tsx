@@ -156,7 +156,7 @@ const RuleFormDialog = ({
                         <Input
                             value={formData.ptkp || ''}
                             onChange={(e) => handleChange('ptkp', e.target.value)}
-                            placeholder="Contoh: >2000000 atau 0-2000000 atau N/A"
+                            placeholder="Contoh: &gt;2000000 atau 0-2000000 atau N/A"
                         />
                     </div>
                 </div>
@@ -393,3 +393,5 @@ export default function AturanPajakPage() {
     </>
   );
 }
+
+    
