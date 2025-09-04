@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useEffect, useState, Suspense } from 'react';
@@ -77,7 +76,7 @@ function HasilContent() {
 
     const formatCurrency = (value: number) => {
         if (typeof value !== 'number') return 'Rp 0';
-        return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value);
+        return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Math.round(value));
     }
     
     const handlePrint = () => {
@@ -92,7 +91,7 @@ function HasilContent() {
         );
     }
 
-    const isApplicable = (value: string | undefined | null) => value && value !== "N/A" && value.trim() !== "";
+    const isApplicable = (value: string | undefined | null) => value && value !== "N/A";
 
     return (
          <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 print:bg-white">
@@ -122,13 +121,13 @@ function HasilContent() {
                                     <TableCell className="font-semibold">Tanggal & Waktu Dibuat</TableCell>
                                     <TableCell>: {formattedDate || 'Memuat...'}</TableCell>
                                 </TableRow>
-                                {isApplicable(data.namaBidang) && (
+                                {data.namaBidang && data.namaBidang.trim() !== '' && (
                                     <TableRow>
                                         <TableCell className="font-semibold">Nama Bidang atau Bagian</TableCell>
                                         <TableCell>: {data.namaBidang}</TableCell>
                                     </TableRow>
                                 )}
-                                {isApplicable(data.subKegiatan) && (
+                                {data.subKegiatan && data.subKegiatan.trim() !== '' && (
                                     <TableRow>
                                         <TableCell className="font-semibold">Sub Kegiatan</TableCell>
                                         <TableCell>: {data.subKegiatan}</TableCell>
@@ -266,3 +265,5 @@ export default function HasilPage() {
         </Suspense>
     )
 }
+
+    
