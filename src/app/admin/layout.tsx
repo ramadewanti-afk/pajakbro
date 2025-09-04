@@ -2,7 +2,7 @@
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarInset, SidebarHeader, SidebarTrigger, SidebarContent, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { Home, History, LogOut, Loader2 } from "lucide-react";
+import { Home, History, LogOut, Loader2, Database } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -61,6 +61,14 @@ export default function AdminLayout({
                   <Link href="/admin">
                     <History />
                     <span>Riwayat Perhitungan</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Data Aturan Pajak">
+                  <Link href="/admin/tax-rules">
+                    <Database />
+                    <span>Data Aturan Pajak</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
