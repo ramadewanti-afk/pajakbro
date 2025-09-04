@@ -1,20 +1,30 @@
 
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LogIn, TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
     const router = useRouter();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
     const handleLogin = () => {
-        // TODO: Implement actual login logic
-        // For now, just navigate to the admin page
-        router.push('/admin');
+        setError(""); // Reset error on new attempt
+        // Hardcoded credentials for demonstration
+        if (email === "admin@example.com" && password === "password") {
+            // In a real app, you'd set a token/session here
+            router.push('/admin');
+        } else {
+            setError("Email atau password salah. Silakan coba lagi.");
+        }
     }
 
     return (
@@ -27,12 +37,33 @@ export default function LoginPage() {
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" placeholder="admin@example.com" required />
+                        <Input 
+                            id="email" 
+                            type="email" 
+                            placeholder="admin@example.com" 
+                            required 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="password">Password</Label>
-                        <Input id="password" type="password" required />
+                        <Input 
+                            id="password" 
+                            type="password" 
+                            required 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
                     </div>
+                    {error && (
+                         <Alert variant="destructive">
+                            <TriangleAlert className="h-4 w-4" />
+                            <AlertDescription>
+                                {error}
+                            </AlertDescription>
+                        </Alert>
+                    )}
                 </CardContent>
                 <CardContent>
                     <Button className="w-full" onClick={handleLogin}>
