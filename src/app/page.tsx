@@ -255,7 +255,7 @@ export default function HomePage() {
     const activeHistory = calculationHistory.filter(item => item.status === 'Aktif').sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
     if (!searchTerm) return activeHistory;
     return activeHistory.filter(item =>
-        item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(item.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.jenisTransaksi.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [calculationHistory, searchTerm]);
@@ -574,7 +574,7 @@ export default function HomePage() {
                                 </SelectContent>
                             </Select>
                           </div>
-                       </div>>
+                       </div>
                        <Button onClick={handleCalculate} className="w-full text-lg py-6">
                            <Calculator className="mr-2 h-5 w-5" />
                            Hitung Pajak
