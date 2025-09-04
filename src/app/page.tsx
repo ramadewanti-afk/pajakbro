@@ -271,13 +271,11 @@ export default function HomePage() {
     if (isNaN(nilai)) return null;
 
     const candidates = taxRules.filter(r => {
-        // Must be active and match primary conditions
         if (r.status !== 'Aktif') return false;
         if (r.jenisTransaksi !== jenisTransaksi) return false;
         if (r.wp !== wp) return false;
         if (!checkPtkp(nilai, r.ptkp)) return false;
         
-        // Match specific conditions if they are not "N/A" for the user input
         if (fakturPajak !== 'N/A' && r.fakturPajak !== 'N/A' && r.fakturPajak !== fakturPajak) return false;
         if (asnStatus !== 'N/A' && r.asn !== 'N/A' && r.asn !== asnStatus) return false;
         if (asnGolongan !== 'N/A' && r.golongan !== 'N/A' && r.golongan !== asnGolongan) return false;
@@ -287,9 +285,6 @@ export default function HomePage() {
     });
 
     if (candidates.length === 0) return null;
-    
-    // Simple logic: return the first candidate found.
-    // For more complex scenarios, scoring might be needed, but this is a robust start.
     return candidates[0];
   };
 
@@ -313,24 +308,20 @@ export default function HomePage() {
       let pajakDaerah = 0;
       let dpp = nilai;
 
-      // Determine DPP automatically based on the matched rule
       if (rule.jenisTransaksi === "Makan Minum") {
-          dpp = Math.round(nilai / 1.1); // DPP = 100/110 * Nilai
+          dpp = Math.round(nilai / 1.1);
       } else if (rule.kenaPPN) {
-          dpp = Math.round(nilai / 1.11); // DPP = 100/111 * Nilai
+          dpp = Math.round(nilai / 1.11);
       }
 
-      // Calculate PPN if applicable
       if (rule.kenaPPN) {
           ppn = Math.round(nilai - dpp);
       }
       
-      // Special case for Makan Minum, which has a regional tax.
       if (rule.jenisTransaksi === "Makan Minum") {
-          pajakDaerah = Math.round(dpp * 0.10); // 10% of DPP
+          pajakDaerah = Math.round(dpp * 0.10);
       }
 
-      // Calculate PPh based on the final DPP
       if (String(rule.tarifPajak).includes('%')) {
           const rate = parseFloat(String(rule.tarifPajak).replace('%', '')) / 100;
           pph = Math.round(dpp * rate);
@@ -371,30 +362,14 @@ export default function HomePage() {
 
   // Effect to trigger automatic calculation
   useEffect(() => {
-    // This function will run whenever the core dependencies change.
     performCalculation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
+  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi, selectedBidang, selectedKegiatan]);
   
-  // Effect to update optional data if the calculation result already exists
-  useEffect(() => {
-      if (calculationResult) {
-          setCalculationResult(prevResult => {
-              if (!prevResult) return null;
-              return {
-                  ...prevResult,
-                  namaBidang: selectedBidang,
-                  subKegiatan: selectedKegiatan,
-              }
-          })
-      }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedBidang, selectedKegiatan]);
-
   const handleSaveAndShowDetails = () => {
     if (!calculationResult) return;
     
-    // The result from state is already updated by the useEffects, so we can use it directly.
+    // The result from state is already updated by the useEffect, so we can use it directly.
     const newHistory = [calculationResult, ...calculationHistory];
     setCalculationHistory(newHistory);
     sessionStorage.setItem('calculationResult', JSON.stringify(calculationResult));
@@ -407,7 +382,6 @@ export default function HomePage() {
 
   const handleTransactionChange = (value: string) => {
       setJenisTransaksi(value);
-      // Reset value to force recalculation if needed, or let useEffect handle it.
       setCalculationResult(null); 
       setError("");
   }
