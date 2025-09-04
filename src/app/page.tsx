@@ -49,28 +49,31 @@ const generateShortId = () => {
 const checkPtkp = (value: number, ptkp: string): boolean => {
     if (ptkp === "N/A" || !ptkp) return true;
     
-    if (ptkp.startsWith('>=')) {
-        const limit = parseFloat(ptkp.substring(2));
+    // Normalize string by removing spaces
+    const cleanPtkp = ptkp.replace(/\s/g, '');
+
+    if (cleanPtkp.startsWith('>=')) {
+        const limit = parseFloat(cleanPtkp.substring(2));
         return !isNaN(limit) && value >= limit;
     }
 
-    if (ptkp.startsWith('>')) {
-        const limit = parseFloat(ptkp.substring(1));
+    if (cleanPtkp.startsWith('>')) {
+        const limit = parseFloat(cleanPtkp.substring(1));
         return !isNaN(limit) && value > limit;
     }
 
-    if (ptkp.startsWith('<=')) {
-        const limit = parseFloat(ptkp.substring(2));
+    if (cleanPtkp.startsWith('<=')) {
+        const limit = parseFloat(cleanPtkp.substring(2));
         return !isNaN(limit) && value <= limit;
     }
 
-    if (ptkp.startsWith('<')) {
-        const limit = parseFloat(ptkp.substring(1));
+    if (cleanPtkp.startsWith('<')) {
+        const limit = parseFloat(cleanPtkp.substring(1));
         return !isNaN(limit) && value < limit;
     }
     
-    if (ptkp.includes('-')) {
-        const [min, max] = ptkp.split('-').map(Number);
+    if (cleanPtkp.includes('-')) {
+        const [min, max] = cleanPtkp.split('-').map(Number);
         if (!isNaN(min) && !isNaN(max)) {
             return value >= min && value <= max;
         }
@@ -319,7 +322,7 @@ export default function HomePage() {
   // Effect to trigger automatic calculation
   useEffect(() => {
     const nilai = parseFloat(nilaiTransaksi);
-    if (isNaN(nilai) || nilai <= 0 || !jenisTransaksi) {
+    if (isNaN(nilai) || nilai < 0 || !jenisTransaksi) { // Allow 0 for calculation
       setCalculationResult(null);
       setError("");
       return;
@@ -761,5 +764,3 @@ export default function HomePage() {
   );
 }
 
-
-    
