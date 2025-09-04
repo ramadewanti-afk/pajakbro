@@ -27,23 +27,22 @@ function HasilContent() {
 
     useEffect(() => {
         let resultData = null;
-        const dataParam = searchParams.get('data');
-
-        if (dataParam) {
+        // ALWAYS prioritize data from session storage first, as it's the most reliable source.
+        const sessionData = sessionStorage.getItem('calculationResult');
+        if (sessionData) {
             try {
-                // Data from URL (shared link)
-                resultData = JSON.parse(atob(dataParam));
+                resultData = JSON.parse(sessionData);
             } catch (error) {
-                console.error("Failed to parse data from URL", error);
+                console.error("Failed to parse calculation result from session storage", error);
             }
         } else {
-            // Data from session storage (direct navigation after calculation)
-            const sessionData = sessionStorage.getItem('calculationResult');
-            if (sessionData) {
+             // Fallback to URL param if session storage is empty (e.g., shared link)
+            const dataParam = searchParams.get('data');
+            if (dataParam) {
                 try {
-                    resultData = JSON.parse(sessionData);
+                    resultData = JSON.parse(atob(dataParam));
                 } catch (error) {
-                    console.error("Failed to parse calculation result from session storage", error);
+                    console.error("Failed to parse data from URL", error);
                 }
             }
         }
@@ -58,11 +57,11 @@ function HasilContent() {
                     })
                 );
             }
-            // Generate QR code URL
+            // Generate QR code URL from the definitive result data
             const encodedData = btoa(JSON.stringify(resultData));
             setQrCodeUrl(`${window.location.origin}/hasil?data=${encodedData}`);
         } else {
-            // If no data, redirect back to home
+            // If no data is found anywhere, redirect to home.
             router.push('/');
             return; // Exit early
         }
@@ -93,7 +92,7 @@ function HasilContent() {
         );
     }
 
-    const isApplicable = (value: string | undefined | null) => value && value !== "N/A" && value !== "-";
+    const isApplicable = (value: string | undefined | null) => value && value !== "N/A";
 
     return (
          <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 print:bg-white">
