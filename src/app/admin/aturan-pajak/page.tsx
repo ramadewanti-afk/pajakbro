@@ -156,7 +156,7 @@ const RuleFormDialog = ({
                         <Input
                             value={formData.ptkp || ''}
                             onChange={(e) => handleChange('ptkp', e.target.value)}
-                            placeholder="Contoh: &gt;2000000 atau 0-2000000 atau N/A"
+                            placeholder="Contoh: >2000000 atau 0-2000000 atau N/A"
                         />
                     </div>
                 </div>
@@ -184,17 +184,6 @@ const RuleFormDialog = ({
                     <div className="space-y-1.5">
                         <Label>Kode Pajak PPh</Label>
                         <Input value={formData.kodePajak} onChange={(e) => handleChange('kodePajak', e.target.value)} placeholder="Contoh: 411121-100 atau -" />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label>DPP Rasio</Label>
-                        <Select value={formData.dppRatio} onValueChange={(v) => handleChange('dppRatio', v)}>
-                            <SelectTrigger><SelectValue placeholder="Pilih Rasio DPP" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="100/100">100/100 (Tanpa PPN/Pajak Daerah)</SelectItem>
-                                <SelectItem value="100/110">100/110 (Termasuk Pajak Daerah 10%)</SelectItem>
-                                <SelectItem value="100/111">100/111 (Termasuk PPN 11%)</SelectItem>
-                            </SelectContent>
-                        </Select>
                     </div>
                     <div className="space-y-1.5">
                         <Label>Tarif Pajak</Label>

@@ -356,13 +356,21 @@ export default function HomePage() {
     let ppn = 0;
     let pajakDaerah = 0;
     let dpp = nilai;
+    let dppRatio: string;
 
-    // Recalculate DPP based on ratio if applicable (for PPN or Pajak Daerah)
-    if (rule.kenaPPN || rule.jenisTransaksi === "Makan Minum") {
-        const [numerator, denominator] = rule.dppRatio.split('/').map(Number);
-        if (denominator) {
-            dpp = Math.round(nilai * (numerator / denominator));
-        }
+    // Determine DPP Ratio automatically
+    if (rule.jenisTransaksi === "Makan Minum") {
+        dppRatio = "100/110";
+    } else if (rule.kenaPPN) {
+        dppRatio = "100/111";
+    } else {
+        dppRatio = "100/100";
+    }
+
+    // Recalculate DPP based on the determined ratio
+    const [numerator, denominator] = dppRatio.split('/').map(Number);
+    if (denominator) {
+        dpp = Math.round(nilai * (numerator / denominator));
     }
     
     // Calculate PPN if applicable
@@ -607,6 +615,10 @@ export default function HomePage() {
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="Tidak" id="ppn-tidak" />
                                         <Label htmlFor="ppn-tidak">Tidak</Label>
+                                    </div>
+                                     <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="N/A" id="ppn-na" />
+                                        <Label htmlFor="ppn-na">Otomatis</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
