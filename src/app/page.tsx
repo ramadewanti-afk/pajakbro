@@ -13,7 +13,7 @@ import { taxRules } from "@/data/tax-rules";
 import { departments } from "@/data/departments";
 import { activities } from "@/data/activities";
 import { transactionTypes } from "@/data/transaction-types";
-import { Calculator, Coins, LogIn } from "lucide-react";
+import { Calculator, Coins, LogIn, History } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -22,6 +22,9 @@ type AsnStatus = "ASN" | "NON ASN";
 type AsnGolongan = "I" | "II" | "III" | "IV";
 type FakturPajak = "Punya" | "Tidak Punya";
 type SertifikatKonstruksi = "Punya" | "Tidak Punya";
+
+const HISTORY_STORAGE_KEY = 'calculationHistory';
+
 
 export default function HomePage() {
   const router = useRouter();
@@ -160,7 +163,13 @@ export default function HomePage() {
       createdAt: new Date().toISOString(), // Add creation timestamp
     };
     
+    // Save to session storage for immediate viewing
     sessionStorage.setItem('calculationResult', JSON.stringify(resultData));
+
+    // Save to local storage for history
+    const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
+    history.unshift(resultData); // Add to the beginning of the array
+    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history.slice(0, 50))); // Keep only the last 50 entries
 
     router.push('/hasil');
   };
@@ -196,7 +205,13 @@ export default function HomePage() {
         <div className="w-full max-w-2xl space-y-8">
             <Card className="border-2 relative">
                 <CardHeader className="text-center">
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute top-4 right-4 flex gap-2">
+                        <Link href="/riwayat" passHref>
+                            <Button variant="ghost" size="sm">
+                                <History className="mr-2 h-4 w-4" />
+                                Riwayat
+                            </Button>
+                        </Link>
                         <Link href="/login" passHref>
                             <Button variant="ghost" size="sm">
                                 <LogIn className="mr-2 h-4 w-4" />
