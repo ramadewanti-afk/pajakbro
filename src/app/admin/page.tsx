@@ -37,34 +37,34 @@ export default function AdminPage() {
             </header>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
+                <Card className="bg-blue-100 border-blue-200">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Bidang/Bagian</CardTitle>
-                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-medium text-blue-800">Total Bidang/Bagian</CardTitle>
+                        <Briefcase className="h-4 w-4 text-blue-700" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{departments.length}</div>
-                        <p className="text-xs text-muted-foreground">Jumlah bidang/bagian yang terdaftar.</p>
+                        <div className="text-2xl font-bold text-blue-900">{departments.length}</div>
+                        <p className="text-xs text-blue-600">Jumlah bidang/bagian yang terdaftar.</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-green-100 border-green-200">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Subkegiatan</CardTitle>
-                        <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-medium text-green-800">Total Subkegiatan</CardTitle>
+                        <ClipboardList className="h-4 w-4 text-green-700" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{activities.length}</div>
-                         <p className="text-xs text-muted-foreground">Jumlah subkegiatan yang tersedia.</p>
+                        <div className="text-2xl font-bold text-green-900">{activities.length}</div>
+                         <p className="text-xs text-green-600">Jumlah subkegiatan yang tersedia.</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-yellow-100 border-yellow-200">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Aturan Pajak</CardTitle>
-                        <ListTree className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-medium text-yellow-800">Total Aturan Pajak</CardTitle>
+                        <ListTree className="h-4 w-4 text-yellow-700" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{taxRules.length}</div>
-                         <p className="text-xs text-muted-foreground">Jumlah aturan pajak yang didefinisikan.</p>
+                        <div className="text-2xl font-bold text-yellow-900">{taxRules.length}</div>
+                         <p className="text-xs text-yellow-600">Jumlah aturan pajak yang didefinisikan.</p>
                     </CardContent>
                 </Card>
             </div>
