@@ -24,10 +24,11 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    devServer: {
-      allowedDevOrigins: ['*.cloudworkstations.dev'],
-    }
+    serverActions: true,
   },
+  devServer: {
+    allowedDevOrigins: ['*.cloudworkstations.dev'],
+  }
 };
 
 export default withPWA(nextConfig);
