@@ -1,6 +1,8 @@
 'use server';
 
 import { ensureTaxLawCompliance } from '@/ai/flows/ensure-tax-law-compliance';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface FormData {
     jenisTransaksi: string;
@@ -10,6 +12,7 @@ interface FormData {
     golongan?: string;
     sertifikatKonstruksi: boolean;
     nilaiTransaksi: number;
+    userId: string;
 }
 
 const formatCurrency = (value: number) => {
@@ -43,6 +46,28 @@ Calculated Taxes:
 
   try {
     const result = await ensureTaxLawCompliance({ taxCalculationDetails });
+
+     // Save to Firestore
+    if (data.userId) {
+        try {
+            await addDoc(collection(db, "pajakHistory"), {
+                userId: data.userId,
+                tanggal: serverTimestamp(),
+                jenisTransaksi: data.jenisTransaksi,
+                wajibPajak: data.wajibPajak,
+                nilai: data.nilaiTransaksi,
+                pph: pph21,
+                ppn: ppn,
+                total: totalPajak,
+                statusKepatuhan: result.complianceReport?.toLowerCase().includes('compliant') ? 'Compliant' : 'Needs Review',
+            });
+        } catch (e) {
+            console.error("Error adding document: ", e);
+            // Don't block user flow if firestore fails
+        }
+    }
+
+
     return { 
       complianceReport: result.complianceReport,
       pph21,
@@ -57,7 +82,7 @@ Calculated Taxes:
 }
 
 // Simplified tax logic based on the provided image
-function getTaxDetails(data: FormData) {
+function getTaxDetails(data: Omit<FormData, 'userId'>) {
   let tarifPajak = 0;
   let kenaPPN = false;
   const { jenisTransaksi, wajibPajak, isASN, golongan, nilaiTransaksi, sertifikatKonstruksi } = data;
@@ -119,7 +144,7 @@ function getTaxDetails(data: FormData) {
   return { pph21: pphValue, ppn: ppnValue, totalPajak, tarifPajak, kenaPPN };
 }
 
-export async function calculateTaxAction(data: FormData) {
+export async function calculateTaxAction(data: Omit<FormData, 'userId'>) {
     const details = getTaxDetails(data);
     return {
         ...details,

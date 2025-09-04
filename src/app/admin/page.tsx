@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -17,9 +18,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { History } from "lucide-react";
-
-const HISTORY_KEY = 'pajakBroHistory';
+import { History, Loader2 } from "lucide-react";
+import { db, auth } from '@/lib/firebase';
+import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 interface CalculationHistory {
     id: string;
@@ -41,20 +43,72 @@ const formatCurrency = (value: number) => {
     }).format(value);
   };
 
+const formatDate = (timestamp: Timestamp) => {
+    if (!timestamp) return 'N/A';
+    return timestamp.toDate().toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+}
+
 export default function AdminPage() {
     const [calculationHistory, setCalculationHistory] = useState<CalculationHistory[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        try {
-            const savedHistory = localStorage.getItem(HISTORY_KEY);
-            if (savedHistory) {
-                setCalculationHistory(JSON.parse(savedHistory));
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+                fetchHistory(currentUser.uid);
+            } else {
+                setLoading(false);
             }
-        } catch (e) {
-            console.error("Failed to load history from local storage", e);
-        }
+        });
+        return () => unsubscribe();
     }, []);
 
+    const fetchHistory = async (uid: string) => {
+        setLoading(true);
+        try {
+            const q = query(
+                collection(db, "pajakHistory"), 
+                where("userId", "==", uid),
+                orderBy("tanggal", "desc")
+            );
+            const querySnapshot = await getDocs(q);
+            const history: CalculationHistory[] = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                history.push({
+                    id: doc.id,
+                    tanggal: formatDate(data.tanggal),
+                    jenisTransaksi: data.jenisTransaksi,
+                    wajibPajak: data.wajibPajak,
+                    nilai: data.nilai,
+                    pph: data.pph,
+                    ppn: data.ppn,
+                    total: data.total,
+                    statusKepatuhan: data.statusKepatuhan
+                });
+            });
+            setCalculationHistory(history);
+        } catch (e) {
+            console.error("Failed to load history from Firestore", e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+  if (loading) {
+    return (
+        <div className="flex h-screen w-full items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    )
+  }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -65,7 +119,7 @@ export default function AdminPage() {
             Riwayat Perhitungan Pajak
           </CardTitle>
           <CardDescription>
-            Berikut adalah daftar perhitungan pajak yang telah dilakukan.
+            Berikut adalah daftar perhitungan pajak yang telah Anda lakukan.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -110,5 +164,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-    

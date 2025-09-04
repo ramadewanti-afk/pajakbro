@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition } from 'react';
@@ -14,7 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, LogIn, Loader2 } from "lucide-react";
-import { loginAction } from './actions';
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,12 +28,20 @@ export default function LoginPage() {
   const handleLogin = () => {
     setError('');
     startTransition(async () => {
-      const result = await loginAction({ email, password });
-      if (result.success) {
-        // Redirect to admin page on successful login
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
         router.push('/admin');
-      } else if (result.error) {
-        setError(result.error);
+      } catch (e: any) {
+        switch (e.code) {
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+            setError('Email atau password salah.');
+            break;
+          default:
+            setError('Terjadi kesalahan saat login.');
+            break;
+        }
       }
     });
   };

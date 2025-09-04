@@ -1,10 +1,14 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarInset, SidebarHeader, SidebarTrigger, SidebarContent, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { Home, History, LogOut } from "lucide-react";
+import { Home, History, LogOut, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { logoutAction } from "../login/actions";
+import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function AdminLayout({
   children,
@@ -12,12 +16,32 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const [authLoaded, setAuthLoaded] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.replace('/login');
+      } else {
+        setAuthLoaded(true);
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+
 
   const handleLogout = async () => {
-    await logoutAction();
-    router.push('/login');
-    router.refresh();
+    await auth.signOut();
+    router.replace('/login');
   };
+  
+  if (!authLoaded) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>

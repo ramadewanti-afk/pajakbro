@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
@@ -11,6 +12,7 @@ import {
   Loader2,
   AlertCircle,
   LogIn,
+  LogOut,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -42,6 +44,11 @@ import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { checkComplianceAction, calculateTaxAction } from "./actions";
 import Link from "next/link";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { logoutAction } from "./login/actions";
+import { useRouter } from "next/navigation";
+
 
 const formSchema = z.object({
   jenisTransaksi: z.string().min(1, "Jenis transaksi harus diisi"),
@@ -56,9 +63,9 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const STORAGE_KEY = 'pajakBroFormData';
-const HISTORY_KEY = 'pajakBroHistory';
 
 export default function PajakBroCalculator() {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isCalculating, startCalculating] = useTransition();
   const [pph21, setPph21] = useState(0);
@@ -67,6 +74,16 @@ export default function PajakBroCalculator() {
   const [tarifPajak, setTarifPajak] = useState(0);
   const [complianceReport, setComplianceReport] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setAuthLoaded(true);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -99,9 +116,10 @@ export default function PajakBroCalculator() {
   // Save to localStorage on change
   useEffect(() => {
     try {
-      const a = setTimeout(() => {
+      const timer = setTimeout(() => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(watchedValues));
       }, 500)
+      return () => clearTimeout(timer);
     } catch(e) {
       console.error("Failed to save form data to local storage", e);
     }
@@ -141,10 +159,14 @@ export default function PajakBroCalculator() {
   ]);
 
   const handleCheckCompliance = () => {
+    if (!user) {
+        setError("Anda harus login untuk menggunakan fitur ini.");
+        return;
+    }
     setError(null);
     setComplianceReport(null);
     startTransition(async () => {
-      const result = await checkComplianceAction({ ...watchedValues });
+      const result = await checkComplianceAction({ ...watchedValues, userId: user.uid });
       if (result.error) {
         setError(result.error);
       } else {
@@ -153,28 +175,13 @@ export default function PajakBroCalculator() {
         setPpn(result.ppn ?? 0);
         setTotalPajak(result.totalPajak ?? 0);
         setTarifPajak(result.tarifPajak ?? 0);
-        
-        // Save to history
-        try {
-          const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-          const newHistoryEntry = {
-            id: new Date().toISOString(),
-            tanggal: new Date().toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-'),
-            jenisTransaksi: watchedValues.jenisTransaksi,
-            wajibPajak: watchedValues.wajibPajak,
-            nilai: watchedValues.nilaiTransaksi,
-            pph: result.pph21 ?? 0,
-            ppn: result.ppn ?? 0,
-            total: result.totalPajak ?? 0,
-            statusKepatuhan: result.complianceReport?.toLowerCase().includes('compliant') ? 'Compliant' : 'Needs Review',
-          };
-          const updatedHistory = [newHistoryEntry, ...history];
-          localStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
-        } catch (e) {
-          console.error("Failed to save history to local storage", e);
-        }
       }
     });
+  };
+  
+  const handleLogout = async () => {
+    await logoutAction();
+    router.push('/login');
   };
 
   const formatCurrency = (value: number) => {
@@ -195,11 +202,30 @@ export default function PajakBroCalculator() {
           <p className="text-muted-foreground mt-2 text-lg">
             Kalkulator Pajak Lengkap untuk Keperluan Dinas
           </p>
-          <Button asChild variant="outline" className="absolute top-0 right-0">
-            <Link href="/login">
-              <LogIn className="mr-2" /> Admin
-            </Link>
-          </Button>
+          <div className="absolute top-0 right-0">
+            {authLoaded ? (
+                user ? (
+                    <div className="flex items-center gap-2">
+                         <Button asChild variant="outline">
+                            <Link href="/admin">
+                                Admin
+                            </Link>
+                        </Button>
+                        <Button onClick={handleLogout} variant="outline">
+                            <LogOut className="mr-2" /> Logout
+                        </Button>
+                    </div>
+                ) : (
+                    <Button asChild variant="outline">
+                        <Link href="/login">
+                        <LogIn className="mr-2" /> Admin Login
+                        </Link>
+                    </Button>
+                )
+            ) : (
+                <Loader2 className="animate-spin" />
+            )}
+            </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -406,7 +432,7 @@ export default function PajakBroCalculator() {
                 </div>
               </div>
               <div className="pt-6 text-center">
-                 <Button onClick={handleCheckCompliance} disabled={isPending || isCalculating || !form.formState.isValid} className="w-full md:w-auto">
+                 <Button onClick={handleCheckCompliance} disabled={isPending || isCalculating || !form.formState.isValid || !user} className="w-full md:w-auto">
                     {isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -419,7 +445,9 @@ export default function PajakBroCalculator() {
                       </>
                     )}
                  </Button>
-                 <p className="text-xs text-muted-foreground mt-2">Gunakan AI untuk memvalidasi kepatuhan pajak.</p>
+                 <p className="text-xs text-muted-foreground mt-2">
+                    {user ? "Gunakan AI untuk memvalidasi kepatuhan pajak." : "Login untuk menyimpan & cek kepatuhan."}
+                 </p>
               </div>
 
               <div className="pt-4">
@@ -447,5 +475,3 @@ export default function PajakBroCalculator() {
     </div>
   );
 }
-
-    
