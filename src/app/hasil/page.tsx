@@ -90,16 +90,10 @@ export default function HasilPage() {
         const element = printRef.current;
         if (!element || !data) return;
 
-        // Temporarily show elements for PDF generation
-        const qrCodePdfElement = element.querySelector('.qr-code-pdf') as HTMLElement | null;
-        if(qrCodePdfElement) qrCodePdfElement.style.display = 'block';
-
         const canvas = await html2canvas(element, { scale: 2 });
         
-        // Hide elements again after capture
-        if(qrCodePdfElement) qrCodePdfElement.style.display = 'none';
-        
-        const imgData = canvas.toDataURL('image/png');
+        // Use JPEG format with quality setting for compression
+        const imgData = canvas.toDataURL('image/jpeg', 0.9);
         
         const pdf = new jsPDF({
             orientation: 'portrait',
@@ -115,11 +109,10 @@ export default function HasilPage() {
         const canvasWidth = pdfWidth - 20; // with some padding
         const canvasHeight = canvasWidth / ratio;
         
-        // Check if content fits, if not, adjust scale (this is a simplified approach)
         let finalHeight = canvasHeight > pdfHeight - 20 ? pdfHeight - 20 : canvasHeight;
 
 
-        pdf.addImage(imgData, 'PNG', 10, 10, canvasWidth, finalHeight);
+        pdf.addImage(imgData, 'JPEG', 10, 10, canvasWidth, finalHeight);
         pdf.save(`laporan-pajak-${data.id}.pdf`);
     };
     
@@ -164,7 +157,7 @@ export default function HasilPage() {
                                 <CardDescription>{reportSubtitle}</CardDescription>
                              </div>
                         </div>
-                         <div className="flex flex-col items-center gap-2 qr-code-container">
+                         <div className="flex flex-col items-center gap-2">
                             <div className="p-2 border rounded-lg bg-white">
                                 {qrCodeUrl && <QRCode value={qrCodeUrl} size={80} />}
                             </div>
