@@ -129,7 +129,9 @@ const TransactionCombobox = ({
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {value ? transactions.find(t => t.name === value)?.name : "Pilih Jenis Transaksi"}
+          <span className="truncate">
+            {value ? transactions.find(t => t.name === value)?.name : "Pilih Jenis Transaksi"}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -167,7 +169,7 @@ const TransactionCombobox = ({
                       value === transaction.name ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {transaction.name}
+                  <span className="truncate">{transaction.name}</span>
                 </Button>
               ))
              ) : (
@@ -680,5 +682,7 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
 
     
