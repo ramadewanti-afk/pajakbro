@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Image as ImageIcon, Save, FileText } from "lucide-react";
+import { Settings, Image as ImageIcon, Save, FileText, Home } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,10 @@ const REPORT_TITLE_KEY = 'app-report-title';
 const DEFAULT_REPORT_TITLE = 'HASIL PERHITUNGAN PAJAK';
 const REPORT_SUBTITLE_KEY = 'app-report-subtitle';
 const DEFAULT_REPORT_SUBTITLE = 'Berikut adalah rincian perhitungan pajak berdasarkan data yang dimasukkan.';
+const MAIN_TITLE_KEY = 'app-main-title';
+const DEFAULT_MAIN_TITLE = 'Kalkulator Pajak Bro';
+const MAIN_SUBTITLE_KEY = 'app-main-subtitle';
+const DEFAULT_MAIN_SUBTITLE = 'Hitung Pajak Penghasilan (PPh) dan PPN berdasarkan jenis transaksi dengan mudah dan akurat.';
 
 
 export default function PengaturanPage() {
@@ -28,6 +32,13 @@ export default function PengaturanPage() {
   
   const [reportSubtitle, setReportSubtitle] = useState('');
   const [inputReportSubtitle, setInputReportSubtitle] = useState('');
+  
+  const [mainTitle, setMainTitle] = useState('');
+  const [inputMainTitle, setInputMainTitle] = useState('');
+
+  const [mainSubtitle, setMainSubtitle] = useState('');
+  const [inputMainSubtitle, setInputMainSubtitle] = useState('');
+
 
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -46,6 +57,17 @@ export default function PengaturanPage() {
     const storedReportSubtitle = localStorage.getItem(REPORT_SUBTITLE_KEY) || DEFAULT_REPORT_SUBTITLE;
     setReportSubtitle(storedReportSubtitle);
     setInputReportSubtitle(storedReportSubtitle);
+      
+    // Load main title
+    const storedMainTitle = localStorage.getItem(MAIN_TITLE_KEY) || DEFAULT_MAIN_TITLE;
+    setMainTitle(storedMainTitle);
+    setInputMainTitle(storedMainTitle);
+
+    // Load main subtitle
+    const storedMainSubtitle = localStorage.getItem(MAIN_SUBTITLE_KEY) || DEFAULT_MAIN_SUBTITLE;
+    setMainSubtitle(storedMainSubtitle);
+    setInputMainSubtitle(storedMainSubtitle);
+
   }, []);
 
   const handleSave = () => {
@@ -60,6 +82,14 @@ export default function PengaturanPage() {
     // Save Report Subtitle
     localStorage.setItem(REPORT_SUBTITLE_KEY, inputReportSubtitle);
     setReportSubtitle(inputReportSubtitle);
+      
+    // Save Main Title
+    localStorage.setItem(MAIN_TITLE_KEY, inputMainTitle);
+    setMainTitle(inputMainTitle);
+
+    // Save Main Subtitle
+    localStorage.setItem(MAIN_SUBTITLE_KEY, inputMainSubtitle);
+    setMainSubtitle(inputMainSubtitle);
 
     setSuccessMessage('Pengaturan berhasil diperbarui! Perubahan akan terlihat di seluruh aplikasi.');
     setTimeout(() => setSuccessMessage(''), 3000); // Clear message after 3 seconds
@@ -80,6 +110,16 @@ export default function PengaturanPage() {
       localStorage.removeItem(REPORT_SUBTITLE_KEY);
       setReportSubtitle(DEFAULT_REPORT_SUBTITLE);
       setInputReportSubtitle(DEFAULT_REPORT_SUBTITLE);
+
+       // Reset Main Title
+      localStorage.removeItem(MAIN_TITLE_KEY);
+      setMainTitle(DEFAULT_MAIN_TITLE);
+      setInputMainTitle(DEFAULT_MAIN_TITLE);
+
+      // Reset Main Subtitle
+      localStorage.removeItem(MAIN_SUBTITLE_KEY);
+      setMainSubtitle(DEFAULT_MAIN_SUBTITLE);
+      setInputMainSubtitle(DEFAULT_MAIN_SUBTITLE);
 
       setSuccessMessage('Pengaturan berhasil direset ke default.');
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -138,6 +178,36 @@ export default function PengaturanPage() {
                 </div>
             </div>
         </div>
+        
+        <Separator />
+          
+        {/* Main Page Customization */}
+        <div className="border rounded-lg p-6">
+             <div className="flex items-center gap-3 mb-4">
+                <Home className="h-5 w-5 text-muted-foreground" />
+                <h3 className="text-lg font-semibold">Kustomisasi Halaman Utama</h3>
+            </div>
+             <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="main-title">Judul Utama</Label>
+                    <Input 
+                        id="main-title"
+                        value={inputMainTitle}
+                        onChange={(e) => setInputMainTitle(e.target.value)}
+                        placeholder="Contoh: Kalkulator Pajak Bro"
+                    />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="main-subtitle">Subjudul Utama</Label>
+                    <Input 
+                        id="main-subtitle"
+                        value={inputMainSubtitle}
+                        onChange={(e) => setInputMainSubtitle(e.target.value)}
+                        placeholder="Contoh: Hitung pajak dengan mudah"
+                    />
+                </div>
+            </div>
+        </div>
 
         <Separator />
 
@@ -145,7 +215,7 @@ export default function PengaturanPage() {
         <div className="border rounded-lg p-6">
              <div className="flex items-center gap-3 mb-4">
                 <FileText className="h-5 w-5 text-muted-foreground" />
-                <h3 className="text-lg font-semibold">Kustomisasi Laporan</h3>
+                <h3 className="text-lg font-semibold">Kustomisasi Laporan PDF</h3>
             </div>
              <div className="space-y-4">
                 <div className="space-y-2">

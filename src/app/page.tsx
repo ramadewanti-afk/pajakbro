@@ -26,6 +26,11 @@ type WpType = "Orang Pribadi" | "Badan Usaha";
 
 const ITEMS_PER_PAGE = 10;
 
+const MAIN_TITLE_KEY = 'app-main-title';
+const DEFAULT_MAIN_TITLE = 'Kalkulator Pajak Bro';
+const MAIN_SUBTITLE_KEY = 'app-main-subtitle';
+const DEFAULT_MAIN_SUBTITLE = 'Hitung Pajak Penghasilan (PPh) dan PPN berdasarkan jenis transaksi dengan mudah dan akurat.';
+
 // Function to format currency
 const formatCurrency = (value: number) => {
     if (typeof value !== 'number') return 'Rp 0';
@@ -246,9 +251,21 @@ export default function HomePage() {
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [visibleHistoryCount, setVisibleHistoryCount] = useState<number>(ITEMS_PER_PAGE);
+    
+  // Customization state
+  const [mainTitle, setMainTitle] = useState(DEFAULT_MAIN_TITLE);
+  const [mainSubtitle, setMainSubtitle] = useState(DEFAULT_MAIN_SUBTITLE);
 
   useEffect(() => {
     sessionStorage.removeItem('calculationResult');
+      
+    // Load customization
+    const storedMainTitle = localStorage.getItem(MAIN_TITLE_KEY);
+    if (storedMainTitle) setMainTitle(storedMainTitle);
+      
+    const storedMainSubtitle = localStorage.getItem(MAIN_SUBTITLE_KEY);
+    if (storedMainSubtitle) setMainSubtitle(storedMainSubtitle);
+
   }, []);
 
   const filteredHistory = useMemo(() => {
@@ -426,11 +443,11 @@ export default function HomePage() {
             <div className="flex justify-center items-center gap-4 mb-2">
                 <Coins className="h-10 w-10 text-primary" />
                 <h1 className="text-4xl font-bold tracking-tight">
-                    Kalkulator Pajak Bro
+                    {mainTitle}
                 </h1>
             </div>
           <p className="text-muted-foreground">
-            Hitung Pajak Penghasilan (PPh) dan PPN berdasarkan jenis transaksi dengan mudah dan akurat.
+            {mainSubtitle}
           </p>
         </header>
 
@@ -617,7 +634,7 @@ export default function HomePage() {
                                             onClick={() => viewHistoryDetails(item)}
                                             className={cn(
                                                 "w-full text-left p-3 rounded-md hover:bg-muted transition-colors border flex items-center justify-between",
-                                                index % 2 === 1 && "bg-muted/50" // Apply alternating color
+                                                index % 2 === 1 && "bg-muted/50"
                                             )}
                                         >
                                             <div>
@@ -661,4 +678,3 @@ export default function HomePage() {
     </div>
   );
 }
-
