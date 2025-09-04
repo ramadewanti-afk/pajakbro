@@ -111,8 +111,8 @@ export default function HasilPage() {
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 print:bg-white">
             <Card className="w-full max-w-4xl print:shadow-none print:border-none">
-                <CardHeader className="text-center bg-primary/10 rounded-t-lg">
-                    <div className="flex items-center justify-center mb-4">
+                 <CardHeader className="bg-primary/10 rounded-t-lg flex flex-row items-center justify-between p-6">
+                    <div className="flex items-center gap-4">
                         <Image
                             src={logoUrl}
                             alt="Logo"
@@ -120,13 +120,24 @@ export default function HasilPage() {
                             height={60}
                             data-ai-hint="tax calculator"
                             unoptimized
+                            className="print:hidden"
                         />
+                         <div>
+                            <CardTitle className="text-2xl font-bold">{reportTitle}</CardTitle>
+                            <CardDescription>{reportSubtitle}</CardDescription>
+                         </div>
                     </div>
-                    <CardTitle className="text-2xl font-bold">{reportTitle}</CardTitle>
-                    <CardDescription>{reportSubtitle}</CardDescription>
+                     <div className="flex flex-col items-center gap-2 print:hidden">
+                        <div className="p-2 border rounded-lg bg-white">
+                            {qrCodeUrl && <QRCode value={qrCodeUrl} size={80} />}
+                        </div>
+                         <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <QrCode className="h-3 w-3" /> Pindai untuk Berbagi
+                        </p>
+                    </div>
                 </CardHeader>
-                <CardContent className="px-8 grid md:grid-cols-3 gap-8">
-                    <div className="md:col-span-2">
+                <CardContent className="px-8 py-6">
+                    <div>
                         <Table className="mb-6">
                             <TableBody>
                                 <TableRow>
@@ -234,15 +245,6 @@ export default function HasilPage() {
                             </TableBody>
                         </Table>
                     </div>
-                    <div className="md:col-span-1 flex flex-col items-center justify-start pt-6 space-y-4 print:hidden">
-                        <div className="p-4 border rounded-lg bg-white">
-                            {qrCodeUrl && <QRCode value={qrCodeUrl} size={160} />}
-                        </div>
-                        <div className='text-center'>
-                            <h4 className="font-semibold flex items-center gap-2"><QrCode className="h-5 w-5" /> Pindai untuk Berbagi</h4>
-                            <p className="text-xs text-muted-foreground">Bagikan hasil perhitungan ini dengan memindai kode QR.</p>
-                        </div>
-                    </div>
                 </CardContent>
                 <CardFooter className="flex justify-end space-x-4 mt-8 print:hidden">
                     <Button variant="outline" onClick={() => router.push('/')}>
@@ -256,3 +258,5 @@ export default function HasilPage() {
         </div>
     );
 };
+
+    
