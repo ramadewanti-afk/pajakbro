@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -182,28 +183,29 @@ export default function HomePage() {
   
   const performCalculation = (nilai: number, rule: Transaction) => {
     let pph = 0;
-    let dpp = nilai;
     let ppn = 0;
     let pajakDaerah = 0;
+    let dpp = nilai;
 
-    if (rule.kenaPPN) {
+    // Recalculate DPP based on ratio if applicable (for PPN or Pajak Daerah)
+    if (rule.kenaPPN || rule.jenisTransaksi === "Makan Minum") {
         const [numerator, denominator] = rule.dppRatio.split('/').map(Number);
         if (denominator) {
             dpp = Math.round(nilai * (numerator / denominator));
-            ppn = nilai - dpp;
         }
+    }
+
+    // Calculate PPN if applicable
+    if (rule.kenaPPN) {
+        ppn = nilai - dpp;
     }
     
-    // Special case for Makan Minum, it has its own tax but we also calculate PPh on it.
+    // Special case for Makan Minum, it has its own tax.
     if (rule.jenisTransaksi === "Makan Minum") {
-        const [numerator, denominator] = rule.dppRatio.split('/').map(Number);
-        if (denominator) {
-            dpp = Math.round(nilai * (numerator / denominator));
-        }
-        pajakDaerah = dpp * 0.10;
+        pajakDaerah = dpp * 0.10; // 10% of DPP
     }
 
-
+    // Calculate PPh based on the final DPP
     if (String(rule.tarifPajak).includes('%')) {
         const rate = parseFloat(String(rule.tarifPajak).replace('%', '')) / 100;
         pph = dpp * rate;
