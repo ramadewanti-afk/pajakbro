@@ -160,7 +160,7 @@ export default function HasilPage() {
                                     <TableCell className="w-2/3">: {data.jenisTransaksi}</TableCell>
                                 </TableRow>
                                 <TableRow>
-                                    <TableCell>Wajib Pajak atau NPWP</TableCell>
+                                    <TableCell>Wajib Pajak</TableCell>
                                     <TableCell>: {data.wajibPajak}</TableCell>
                                 </TableRow>
                                 {data.fakturPajak && data.fakturPajak !== 'N/A' && (
