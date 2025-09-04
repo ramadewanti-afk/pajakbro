@@ -5,7 +5,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Printer, Loader2, QrCode } from "lucide-react";
+import { ArrowLeft, FileDown, Loader2, QrCode } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from 'next/navigation';
 import QRCode from "react-qr-code";
@@ -267,7 +267,7 @@ function HasilContent() {
                         <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
                     </Button>
                     <Button onClick={() => window.print()}>
-                        <Printer className="mr-2 h-4 w-4" /> Cetak
+                        <FileDown className="mr-2 h-4 w-4" /> Simpan sebagai PDF
                     </Button>
                 </CardFooter>
             </Card>
