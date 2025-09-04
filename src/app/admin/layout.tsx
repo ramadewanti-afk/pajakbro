@@ -67,8 +67,8 @@ export default function AdminLayout({
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  href="/admin/subkegiatan"
-                  isActive={pathname === '/admin/subkegiatan'}
+                  href="/admin/aturan-pajak"
+                  isActive={pathname === '/admin/aturan-pajak'}
                 >
                   <ListTree />
                   Master Data Aturan Pajak

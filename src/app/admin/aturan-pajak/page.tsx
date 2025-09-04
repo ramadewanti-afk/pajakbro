@@ -139,7 +139,7 @@ const RuleFormDialog = ({
 }
 
 
-export default function SubKegiatanPage() {
+export default function AturanPajakPage() {
   const [rules, setRules] = React.useState<Transaction[]>(taxRules);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [editingRule, setEditingRule] = React.useState<Transaction | null>(null);
