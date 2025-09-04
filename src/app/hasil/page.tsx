@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState, Suspense } from 'react';
@@ -216,7 +217,7 @@ function HasilContent() {
                                 </TableRow>
                                 <TableRow className="bg-blue-50 font-medium">
                                     <TableCell>Pajak PPh</TableCell>
-                                    <TableCell>: {formatCurrency(data.pajakPph)}</TableCell>
+                                    <TableCell>: {formatCurrency(data.pajakPph)}</TableCell>seminar
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>Kode KAP E-Billing PPh</TableCell>
