@@ -91,7 +91,7 @@ export default function HasilPage() {
         const element = printRef.current;
         if (!element || !data) return;
 
-        const canvas = await html2canvas(element, { scale: 1.5 });
+        const canvas = await html2canvas(element, { scale: 1 });
         
         // Use default PNG format for lossless quality, ensuring QR code is scannable
         const imgData = canvas.toDataURL('image/png');
@@ -290,3 +290,5 @@ export default function HasilPage() {
         </div>
     );
 };
+
+    
