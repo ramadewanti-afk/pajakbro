@@ -66,8 +66,10 @@ export default function HasilPage() {
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <Loader2 className="h-16 w-16 animate-spin text-primary" />
             </div>
-        )
+        );
     }
+
+    const isApplicable = (value: string | undefined | null) => value && value !== "N/A" && value !== "-";
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 print:bg-white">
@@ -85,13 +87,13 @@ export default function HasilPage() {
                                 <TableCell className="font-semibold w-1/3">ID</TableCell>
                                 <TableCell className="w-2/3">: {data.id}</TableCell>
                             </TableRow>
-                            {data.namaBidang && data.namaBidang !== '-' && (
+                            {isApplicable(data.namaBidang) && (
                                 <TableRow>
                                     <TableCell className="font-semibold">Nama Bidang atau Bagian</TableCell>
                                     <TableCell>: {data.namaBidang}</TableCell>
                                 </TableRow>
                             )}
-                            {data.subKegiatan && data.subKegiatan !== '-' && (
+                            {isApplicable(data.subKegiatan) && (
                                 <TableRow>
                                     <TableCell className="font-semibold">Sub Kegiatan</TableCell>
                                     <TableCell>: {data.subKegiatan}</TableCell>
@@ -111,22 +113,30 @@ export default function HasilPage() {
                                 <TableCell>Wajib Pajak atau NPWP</TableCell>
                                 <TableCell>: {data.wajibPajak}</TableCell>
                             </TableRow>
-                             <TableRow>
-                                <TableCell>Faktur Pajak</TableCell>
-                                <TableCell>: {data.fakturPajak}</TableCell>
-                            </TableRow>
-                             <TableRow>
-                                <TableCell>ASN atau NON ASN</TableCell>
-                                <TableCell>: {data.asn}</TableCell>
-                            </TableRow>
-                             <TableRow>
-                                <TableCell>Golongan</TableCell>
-                                <TableCell>: {data.golongan}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>Sertifikat Konstruksi</TableCell>
-                                <TableCell>: {data.sertifikatKonstruksi}</TableCell>
-                            </TableRow>
+                             {isApplicable(data.fakturPajak) && (
+                                <TableRow>
+                                    <TableCell>Faktur Pajak</TableCell>
+                                    <TableCell>: {data.fakturPajak}</TableCell>
+                                </TableRow>
+                             )}
+                             {isApplicable(data.asn) && (
+                                <TableRow>
+                                    <TableCell>ASN atau NON ASN</TableCell>
+                                    <TableCell>: {data.asn}</TableCell>
+                                </TableRow>
+                             )}
+                             {isApplicable(data.golongan) && (
+                                <TableRow>
+                                    <TableCell>Golongan</TableCell>
+                                    <TableCell>: {data.golongan}</TableCell>
+                                </TableRow>
+                             )}
+                             {isApplicable(data.sertifikatKonstruksi) && (
+                                <TableRow>
+                                    <TableCell>Sertifikat Konstruksi</TableCell>
+                                    <TableCell>: {data.sertifikatKonstruksi}</TableCell>
+                                </TableRow>
+                             )}
                         </TableBody>
                     </Table>
 
