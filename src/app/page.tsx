@@ -13,10 +13,9 @@ import { taxRules } from "@/data/tax-rules";
 import { departments } from "@/data/departments";
 import { activities } from "@/data/activities";
 import { transactionTypes } from "@/data/transaction-types";
-import { Calculator, Coins, LogIn, History, ArrowRight, Search } from "lucide-react";
+import { Calculator, Coins, LogIn, History, ArrowRight, Search, FileWarning, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FileWarning } from "lucide-react";
 
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
@@ -26,6 +25,7 @@ type FakturPajak = "Punya" | "Tidak Punya";
 type SertifikatKonstruksi = "Punya" | "Tidak Punya";
 
 const HISTORY_STORAGE_KEY = 'calculationHistory';
+const ITEMS_PER_PAGE = 10;
 
 // This type is used for both history and the full result passed to the next page.
 // Ensure all necessary fields are included.
@@ -77,6 +77,7 @@ export default function HomePage() {
   const [error, setError] = useState<string>("");
   const [history, setHistory] = useState<CalculationResult[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [visibleHistoryCount, setVisibleHistoryCount] = useState<number>(ITEMS_PER_PAGE);
 
   useEffect(() => {
     // Clear session storage on initial load to ensure a fresh start
@@ -99,9 +100,14 @@ export default function HomePage() {
         return history;
     }
     return history.filter(item => 
-        String(item.id).slice(-6).includes(searchTerm)
+        String(item.id).slice(-6).includes(searchTerm.toLowerCase())
     );
   }, [history, searchTerm]);
+  
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchTerm(e.target.value);
+      setVisibleHistoryCount(ITEMS_PER_PAGE); // Reset pagination on new search
+  }
 
   const selectedTransaction = useMemo(() => {
     return taxRules.find(rule => rule.jenisTransaksi === jenisTransaksi && rule.wp === wp);
@@ -458,14 +464,14 @@ export default function HomePage() {
                             placeholder="Cari berdasarkan ID..." 
                             className="pl-9"
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={handleSearchChange}
                          />
                     </div>
                 </CardHeader>
                 <CardContent>
                     {filteredHistory.length > 0 ? (
-                        <ul className="space-y-2 max-h-96 overflow-y-auto">
-                            {filteredHistory.map((item) => (
+                        <ul className="space-y-2 max-h-[50vh] overflow-y-auto pr-2">
+                            {filteredHistory.slice(0, visibleHistoryCount).map((item) => (
                                 <li key={item.id}>
                                     <button
                                         onClick={() => viewHistoryDetails(item)}
@@ -493,10 +499,20 @@ export default function HomePage() {
                         </Alert>
                     )}
                 </CardContent>
+                {filteredHistory.length > visibleHistoryCount && (
+                    <CardFooter className="pt-4 border-t">
+                        <Button
+                            variant="secondary"
+                            className="w-full"
+                            onClick={() => setVisibleHistoryCount(prev => prev + ITEMS_PER_PAGE)}
+                        >
+                            <MoreHorizontal className="mr-2 h-4 w-4" />
+                            Muat Lebih Banyak ({visibleHistoryCount}/{filteredHistory.length})
+                        </Button>
+                    </CardFooter>
+                )}
             </Card>
         </div>
     </div>
   );
 }
-
-    
