@@ -27,7 +27,6 @@ function HasilContent() {
     const [loading, setLoading] = useState(true);
     const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO_URL);
     const [qrCodeUrl, setQrCodeUrl] = useState('');
-    const [isPrintReady, setIsPrintReady] = useState(false);
 
     useEffect(() => {
         let resultData = null;
@@ -72,12 +71,6 @@ function HasilContent() {
         window.print();
     };
     
-    // The logo is the main external asset that can delay printing.
-    // We set print readiness only after it has loaded.
-    const handleLogoLoad = () => {
-        setIsPrintReady(true);
-    }
-
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -112,8 +105,6 @@ function HasilContent() {
                             height={60}
                             data-ai-hint="tax calculator"
                             unoptimized
-                            onLoad={handleLogoLoad} // Set print readiness on load
-                            onError={handleLogoLoad} // Also set readiness on error to not block printing
                         />
                     </div>
                     <CardTitle className="text-2xl font-bold">HASIL PERHITUNGAN PAJAK</CardTitle>
@@ -253,8 +244,7 @@ function HasilContent() {
                     <Button variant="outline" onClick={() => router.push('/')}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
                     </Button>
-                    <Button onClick={handlePrint} disabled={!isPrintReady}>
-                        {!isPrintReady && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Button onClick={handlePrint}>
                         <FileDown className="mr-2 h-4 w-4" /> Simpan sebagai PDF
                     </Button>
                 </CardFooter>
@@ -275,5 +265,3 @@ export default function HasilPage() {
         </Suspense>
     )
 }
-
-    
