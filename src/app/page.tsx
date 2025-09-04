@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { taxRules as initialTaxRules, Transaction } from "@/data/tax-rules";
+import { taxRules as initialTaxRules } from "@/data/tax-rules";
 import { departments as initialDepartments } from "@/data/departments";
 import { activities as initialActivities } from "@/data/activities";
 import { transactionTypes as initialTransactionTypes, TransactionType } from "@/data/transaction-types";
@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Transaction } from "@/data/tax-rules";
 
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
@@ -49,8 +50,7 @@ const generateShortId = () => {
 const checkPtkp = (value: number, ptkp: string): boolean => {
     if (ptkp === "N/A" || !ptkp) return true;
     
-    // Normalize string by removing spaces
-    const cleanPtkp = ptkp.replace(/\s/g, '');
+    const cleanPtkp = ptkp.replace(/\s/g, '').replace(/,/g, '');
 
     if (cleanPtkp.startsWith('>=')) {
         const limit = parseFloat(cleanPtkp.substring(2));
@@ -73,7 +73,7 @@ const checkPtkp = (value: number, ptkp: string): boolean => {
     }
     
     if (cleanPtkp.includes('-')) {
-        const [min, max] = cleanPtkp.split('-').map(Number);
+        const [min, max] = cleanPtkp.split('-').map(v => parseFloat(v));
         if (!isNaN(min) && !isNaN(max)) {
             return value >= min && value <= max;
         }
@@ -278,51 +278,48 @@ export default function HomePage() {
     if (isNaN(nilai)) return null;
 
     const candidates = taxRules.filter(r => {
-        // Basic filtering
-        if (r.status !== 'Aktif' || r.jenisTransaksi !== jenisTransaksi || r.wp !== wp) {
-            return false;
-        }
+        if (r.status !== 'Aktif') return false;
         
-        // This is the key change: check PTKP for all rules now
+        // Primary conditions
+        if (r.jenisTransaksi !== jenisTransaksi) return false;
+        if (r.wp !== wp) return false;
+
+        // PTKP check is crucial
         if (!checkPtkp(nilai, r.ptkp)) {
             return false;
         }
         
+        // Secondary conditions that are not N/A must match
+        if (r.fakturPajak !== 'N/A' && r.fakturPajak !== fakturPajak) return false;
+        if (r.asn !== 'N/A' && r.asn !== asnStatus) return false;
+        if (r.golongan !== 'N/A' && r.golongan !== asnGolongan) return false;
+        if (r.sertifikatKonstruksi !== 'N/A' && r.sertifikatKonstruksi !== sertifikatKonstruksi) return false;
+
         return true;
     });
 
     if (candidates.length === 0) return null;
 
-    // Score candidates based on how many specific conditions they match
+    // Score candidates based on how many specific (non-"N/A") conditions they match
     const scoredCandidates = candidates.map(rule => {
         let score = 0;
-        if (rule.fakturPajak !== 'N/A' && rule.fakturPajak === fakturPajak) score++;
-        if (rule.asn !== 'N/A' && rule.asn === asnStatus) score++;
-        if (rule.golongan !== 'N/A' && rule.golongan === asnGolongan) score++;
-        if (rule.sertifikatKonstruksi !== 'N/A' && rule.sertifikatKonstruksi === sertifikatKonstruksi) score++;
-        
-        // Also score based on how many "N/A" the rule has, lower is better (more specific)
-        const naCount = (rule.fakturPajak === 'N/A' ? 1 : 0) + (rule.asn === 'N/A' ? 1 : 0) + (rule.golongan === 'N/A' ? 1 : 0) + (rule.sertifikatKonstruksi === 'N/A' ? 1 : 0);
-        
-        return { rule, score, naCount };
+        if (rule.fakturPajak !== 'N/A') score++;
+        if (rule.asn !== 'N/A') score++;
+        if (rule.golongan !== 'N/A') score++;
+        if (rule.sertifikatKonstruksi !== 'N/A') score++;
+        return { rule, score };
     });
 
-    // Find the highest score
-    const maxScore = Math.max(...scoredCandidates.map(c => c.score));
+    // Sort by score descending to get the most specific match
+    scoredCandidates.sort((a, b) => b.score - a.score);
     
-    // Filter for candidates with the highest score
-    const bestCandidates = scoredCandidates.filter(c => c.score === maxScore);
-    
-    // If multiple candidates have the same high score, prefer the one with fewer N/A's (most specific)
-    bestCandidates.sort((a, b) => a.naCount - b.naCount);
-    
-    return bestCandidates.length > 0 ? bestCandidates[0].rule : null;
+    return scoredCandidates[0].rule;
   };
 
   // Effect to trigger automatic calculation
   useEffect(() => {
     const nilai = parseFloat(nilaiTransaksi);
-    if (isNaN(nilai) || nilai < 0 || !jenisTransaksi) { // Allow 0 for calculation
+    if (isNaN(nilai) || nilai < 0 || !jenisTransaksi) {
       setCalculationResult(null);
       setError("");
       return;
@@ -764,3 +761,5 @@ export default function HomePage() {
   );
 }
 
+
+    
