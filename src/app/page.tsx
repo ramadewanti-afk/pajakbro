@@ -15,7 +15,7 @@ import { departments as initialDepartments } from "@/data/departments";
 import { activities as initialActivities } from "@/data/activities";
 import { transactionTypes as initialTransactionTypes } from "@/data/transaction-types";
 import { calculationHistory as initialHistory, CalculationResult } from "@/data/history";
-import { Calculator, Coins, LogIn, History, ArrowRight, Search, FileWarning, MoreHorizontal, FileText, Trash2, CheckCircle } from "lucide-react";
+import { Calculator, Coins, LogIn, History, ArrowRight, Search, FileWarning, MoreHorizontal, FileText, Trash2, CheckCircle, Info } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
@@ -346,6 +346,27 @@ export default function HomePage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
+                      <div className="p-3 bg-muted/50 rounded-lg overflow-hidden">
+                        <div className="flex items-center gap-2 mb-2">
+                           <Info className="h-5 w-5 text-primary"/>
+                           <h3 className="font-semibold text-sm">Info Pajak</h3>
+                        </div>
+                         <div className="relative flex overflow-x-hidden text-xs text-muted-foreground">
+                            <div className="animate-marquee whitespace-nowrap">
+                                <span className="mx-4">Pastikan semua data yang Anda masukkan sudah benar untuk hasil perhitungan yang akurat.</span>
+                                <span className="mx-4">Gunakan NPWP untuk mendapatkan tarif pajak yang lebih rendah pada beberapa jenis transaksi.</span>
+                                <span className="mx-4">Simpan bukti potong pajak Anda sebagai dokumentasi resmi.</span>
+                                <span className="mx-4">Batas waktu pelaporan SPT Tahunan adalah 31 Maret untuk Wajib Pajak Orang Pribadi.</span>
+                            </div>
+                             <div className="absolute top-0 animate-marquee2 whitespace-nowrap">
+                                <span className="mx-4">Pastikan semua data yang Anda masukkan sudah benar untuk hasil perhitungan yang akurat.</span>
+                                <span className="mx-4">Gunakan NPWP untuk mendapatkan tarif pajak yang lebih rendah pada beberapa jenis transaksi.</span>
+                                <span className="mx-4">Simpan bukti potong pajak Anda sebagai dokumentasi resmi.</span>
+                                <span className="mx-4">Batas waktu pelaporan SPT Tahunan adalah 31 Maret untuk Wajib Pajak Orang Pribadi.</span>
+                            </div>
+                        </div>
+                      </div>
+
                       <div className="space-y-2">
                         <Label htmlFor="nilai-transaksi">Nilai Transaksi (dalam Rupiah)</Label>
                         <Input
@@ -550,5 +571,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
