@@ -193,10 +193,10 @@ export default function PajakBroCalculator() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-background font-body">
+    <div className="min-h-screen w-full bg-background">
       <main className="container mx-auto px-4 py-8">
         <header className="text-center mb-8 relative">
-          <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">
             Pajak Bro
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
