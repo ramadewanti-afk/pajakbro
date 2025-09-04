@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 import withPWAInit from 'next-pwa';
 
@@ -24,11 +25,10 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    serverActions: true,
+    serverActions: {
+      bodySizeLimit: '4.5mb',
+    }
   },
-  devServer: {
-    allowedDevOrigins: ['*.cloudworkstations.dev'],
-  }
 };
 
 export default withPWA(nextConfig);
