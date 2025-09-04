@@ -28,7 +28,6 @@ type AsnStatus = "ASN" | "NON ASN" | "N/A";
 type AsnGolongan = "I" | "II" | "III" | "IV" | "N/A";
 type FakturPajak = "Punya" | "Tidak Punya" | "N/A";
 type SertifikatKonstruksi = "Punya" | "Tidak Punya" | "N/A";
-type DikenakanPpn = "Ya" | "Tidak" | "N/A";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -48,7 +47,7 @@ const generateShortId = () => {
 
 // Check if a value is within a PTKP range string (e.g., ">2000000" or "0-2000000")
 const checkPtkp = (value: number, ptkp: string): boolean => {
-    if (ptkp === "N/A" || !ptkp) return true; // Matches all if not specified
+    if (ptkp === "N/A" || !ptkp) return true;
     
     if (ptkp.startsWith('>=')) {
         const limit = parseFloat(ptkp.substring(2));
@@ -244,7 +243,6 @@ export default function HomePage() {
   const [asnStatus, setAsnStatus] = useState<AsnStatus>("N/A");
   const [asnGolongan, setAsnGolongan] = useState<AsnGolongan>("N/A");
   const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState<SertifikatKonstruksi>("N/A");
-  const [dikenakanPpn, setDikenakanPpn] = useState<DikenakanPpn>("N/A");
 
   // Calculation and history state
   const [error, setError] = useState<string>("");
@@ -285,16 +283,6 @@ export default function HomePage() {
         // This is the key change: check PTKP for all rules now
         if (!checkPtkp(nilai, r.ptkp)) {
             return false;
-        }
-
-        // If user explicitly chose PPN, filter by that.
-        // If they chose N/A, this condition is skipped, and PTKP decides.
-        if (dikenakanPpn !== 'N/A') {
-            const ruleKenaPpn = r.kenaPPN;
-            const userPilihPpn = dikenakanPpn === 'Ya';
-            if (ruleKenaPpn !== userPilihPpn) {
-                return false;
-            }
         }
         
         return true;
@@ -348,7 +336,7 @@ export default function HomePage() {
     setError("");
     performCalculation(nilai, rule);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi, dikenakanPpn]);
+  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
 
   
  const performCalculation = (nilai: number, rule: Transaction) => {
@@ -455,7 +443,6 @@ export default function HomePage() {
       setAsnStatus("N/A");
       setAsnGolongan("N/A");
       setSertifikatKonstruksi("N/A");
-      setDikenakanPpn("N/A");
       setError("");
       setInfoMessage("");
       setCalculationResult(null);
@@ -601,27 +588,6 @@ export default function HomePage() {
                        <div>
                           <Label className="text-sm text-muted-foreground">Kondisi Spesifik (jika ada)</Label>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-white mt-2">
-                             <div className="space-y-2">
-                                <Label>Dikenakan PPN?</Label>
-                                <RadioGroup
-                                    value={dikenakanPpn}
-                                    onValueChange={(v) => setDikenakanPpn(v as DikenakanPpn)}
-                                    className="flex space-x-4 pt-2"
-                                >
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="Ya" id="ppn-ya" />
-                                        <Label htmlFor="ppn-ya">Ya</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="Tidak" id="ppn-tidak" />
-                                        <Label htmlFor="ppn-tidak">Tidak</Label>
-                                    </div>
-                                     <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="N/A" id="ppn-na" />
-                                        <Label htmlFor="ppn-na">Otomatis</Label>
-                                    </div>
-                                </RadioGroup>
-                            </div>
                             <div className="space-y-2">
                               <Label>Punya Faktur Pajak?</Label>
                               <RadioGroup 
@@ -794,5 +760,6 @@ export default function HomePage() {
     </div>
   );
 }
+
 
     
