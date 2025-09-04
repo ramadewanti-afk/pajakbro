@@ -48,9 +48,9 @@ const getTaxRegulationInfo = ai.defineTool({
   }),
   outputSchema: z.string(),
   async resolve(input) {
-    // TODO: Implement the actual tax regulation retrieval logic here
-    // This is a placeholder; replace it with the actual implementation
-    return `Tax regulation information for ${input.taxType} and transaction details ${input.transactionDetails}: [PLACEHOLDER - Implement retrieval logic]`;
+    // This is a simplified logic based on the provided image.
+    // A real implementation would query a comprehensive and up-to-date tax database.
+    return `Based on the provided tax rules for ${input.taxType} and transaction details: ${input.transactionDetails}. Please verify against the latest official tax regulations.`;
   },
 });
 

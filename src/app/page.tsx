@@ -39,28 +39,27 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { checkComplianceAction } from "./actions";
+import { checkComplianceAction, calculateTaxAction } from "./actions";
 
 const formSchema = z.object({
   jenisTransaksi: z.string().min(1, "Jenis transaksi harus diisi"),
-  wajibPajak: z.string().min(1, "Wajib Pajak/NPWP harus diisi"),
+  wajibPajak: z.string().min(1, "Wajib Pajak harus diisi"),
   fakturPajak: z.string().optional(),
   isASN: z.boolean().default(false),
   golongan: z.string().optional(),
   sertifikatKonstruksi: z.boolean().default(false),
   nilaiTransaksi: z.coerce.number().min(0, "Nilai transaksi harus positif"),
-  tarifPajak: z.coerce.number().min(0, "Tarif pajak harus positif"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const PPN_RATE = 0.11; // 11%
-
 export default function PajakBroCalculator() {
   const [isPending, startTransition] = useTransition();
+  const [isCalculating, startCalculating] = useTransition();
   const [pph21, setPph21] = useState(0);
   const [ppn, setPpn] = useState(0);
   const [totalPajak, setTotalPajak] = useState(0);
+  const [tarifPajak, setTarifPajak] = useState(0);
   const [complianceReport, setComplianceReport] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,38 +67,56 @@ export default function PajakBroCalculator() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       jenisTransaksi: "",
-      wajibPajak: "",
+      wajibPajak: "Orang Pribadi",
       fakturPajak: "",
       isASN: false,
       golongan: "Golongan III",
       sertifikatKonstruksi: false,
       nilaiTransaksi: 0,
-      tarifPajak: 0,
     },
   });
 
   const watchedValues = form.watch();
 
-  useEffect(() => {
-    const { nilaiTransaksi, tarifPajak } = watchedValues;
-    const pphValue = nilaiTransaksi * (tarifPajak / 100);
-    const ppnValue = nilaiTransaksi * PPN_RATE;
-    const totalValue = pphValue + ppnValue;
+  const handleCalculateTax = () => {
+    startCalculating(async () => {
+        const result = await calculateTaxAction(watchedValues);
+        if (result.error) {
+            setError(result.error);
+        } else {
+            setPph21(result.pph21);
+            setPpn(result.ppn);
+            setTotalPajak(result.totalPajak);
+            setTarifPajak(result.tarifPajak);
+        }
+    });
+  };
 
-    setPph21(pphValue);
-    setPpn(ppnValue);
-    setTotalPajak(totalValue);
-  }, [watchedValues.nilaiTransaksi, watchedValues.tarifPajak]);
+  useEffect(() => {
+    handleCalculateTax();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    watchedValues.nilaiTransaksi, 
+    watchedValues.jenisTransaksi,
+    watchedValues.wajibPajak,
+    watchedValues.isASN,
+    watchedValues.golongan,
+    watchedValues.sertifikatKonstruksi
+  ]);
 
   const handleCheckCompliance = () => {
     setError(null);
     setComplianceReport(null);
     startTransition(async () => {
-      const result = await checkComplianceAction({ ...watchedValues, pph21, ppn, totalPajak });
+      const result = await checkComplianceAction({ ...watchedValues });
       if (result.error) {
         setError(result.error);
       } else {
         setComplianceReport(result.complianceReport ?? null);
+        setPph21(result.pph21 ?? 0);
+        setPpn(result.ppn ?? 0);
+        setTotalPajak(result.totalPajak ?? 0);
+        setTarifPajak(result.tarifPajak ?? 0);
       }
     });
   };
@@ -151,11 +168,21 @@ export default function PajakBroCalculator() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Pembelian Barang">Pembelian Barang</SelectItem>
-                            <SelectItem value="Sewa">Sewa</SelectItem>
-                            <SelectItem value="Jasa Konsultansi">Jasa Konsultansi</SelectItem>
-                            <SelectItem value="Jasa Konstruksi">Jasa Konstruksi</SelectItem>
-                            <SelectItem value="Lainnya">Lainnya</SelectItem>
+                            <SelectItem value="Makan Minum">Makan Minum</SelectItem>
+                            <SelectItem value="Service Kendaraan, AC, Laptop, dll">Service Kendaraan, AC, Laptop, dll</SelectItem>
+                            <SelectItem value="Sewa (Alat kesenian, Genset, Sound System, Kendaraan,dll)">Sewa (Alat kesenian, Genset, Sound System, Kendaraan,dll)</SelectItem>
+                            <SelectItem value="Fotokopi/Cetak banner,dll">Fotokopi/Cetak banner,dll</SelectItem>
+                            <SelectItem value="Honor (Narsum, Juri, dll)">Honor (Narsum, Juri, dll)</SelectItem>
+                            <SelectItem value="Tukang Harian (Pekerja lepas)">Tukang Harian (Pekerja lepas)</SelectItem>
+                            <SelectItem value="Hadiah Lomba">Hadiah Lomba</SelectItem>
+                            <SelectItem value="Pembelian Barang (ATK, Komputer, Material, dll)">Pembelian Barang (ATK, Komputer, Material, dll)</SelectItem>
+                             <SelectItem value="Sewa Kendaraan Plat Kuning">Sewa Kendaraan Plat Kuning</SelectItem>
+                            <SelectItem value="Jasa Pentas Seni (Tari, Wayang, dll)">Jasa Pentas Seni (Tari, Wayang, dll)</SelectItem>
+                            <SelectItem value="Jasa Penyelenggara Acara (EO)">Jasa Penyelenggara Acara (EO)</SelectItem>
+                            <SelectItem value="Belanja Premi Asuransi">Belanja Premi Asuransi</SelectItem>
+                            <SelectItem value="Pemeliharaan Bangunan (Service lampu, pipa bocor, pengecatan ringan)">Pemeliharaan Bangunan (Service lampu, pipa bocor, pengecatan ringan)</SelectItem>
+                            <SelectItem value="Pemeliharaan Bangunan (ganti atap, sekat permanen, perbaikan struktur)">Pemeliharaan Bangunan (ganti atap, sekat permanen, perbaikan struktur)</SelectItem>
+                            <SelectItem value="Jasa Konsultasi Konstruksi">Jasa Konsultasi Konstruksi</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -169,10 +196,18 @@ export default function PajakBroCalculator() {
                       name="wajibPajak"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Wajib Pajak / NPWP</FormLabel>
-                          <FormControl>
-                            <Input placeholder="cth: 12.345.678.9-012.000" {...field} />
-                          </FormControl>
+                          <FormLabel>Wajib Pajak</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Pilih jenis wajib pajak" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Orang Pribadi">Orang Pribadi</SelectItem>
+                              <SelectItem value="Badan Usaha">Badan Usaha</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -235,50 +270,37 @@ export default function PajakBroCalculator() {
                     )}
                   </div>
 
+                  { (watchedValues.jenisTransaksi.includes('Konstruksi') || watchedValues.jenisTransaksi.includes('Pemeliharaan Bangunan')) &&
+                    <FormField
+                      control={form.control}
+                      name="sertifikatKonstruksi"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel>Sertifikat Konstruksi</FormLabel>
+                            <FormDescription>Aktifkan jika memiliki sertifikat.</FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  }
+
                   <FormField
                     control={form.control}
-                    name="sertifikatKonstruksi"
+                    name="nilaiTransaksi"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                        <div className="space-y-0.5">
-                          <FormLabel>Sertifikat Konstruksi</FormLabel>
-                          <FormDescription>Aktifkan jika memiliki sertifikat.</FormDescription>
-                        </div>
+                      <FormItem>
+                        <FormLabel>Nilai Transaksi (DPP)</FormLabel>
                         <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          <Input type="number" placeholder="cth: 1000000" {...field} />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="nilaiTransaksi"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nilai Transaksi (DPP)</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="cth: 1000000" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="tarifPajak"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tarif PPh (%)</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="cth: 5" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                 </form>
               </Form>
             </CardContent>
@@ -295,18 +317,24 @@ export default function PajakBroCalculator() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+               {isCalculating ? (
+                <div className="flex items-center justify-center h-48">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+               ) : (
+                <>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div className="flex justify-between"><span className="font-medium text-foreground">Nilai Transaksi:</span> <span>{formatCurrency(watchedValues.nilaiTransaksi)}</span></div>
-                <div className="flex justify-between"><span className="font-medium text-foreground">Tarif PPh:</span> <span>{watchedValues.tarifPajak}%</span></div>
+                <div className="flex justify-between"><span className="font-medium text-foreground">Tarif PPh:</span> <span>{tarifPajak}%</span></div>
               </div>
               <div className="space-y-3 pt-4 border-t">
                   <h4 className="font-semibold text-foreground">Potongan Pajak:</h4>
                   <div className="flex justify-between text-base">
-                      <span>PPh 21</span>
+                      <span>PPh</span>
                       <span className="font-medium">{formatCurrency(pph21)}</span>
                   </div>
                   <div className="flex justify-between text-base">
-                      <span>PPN ({PPN_RATE * 100}%)</span>
+                      <span>PPN</span>
                       <span className="font-medium">{formatCurrency(ppn)}</span>
                   </div>
               </div>
@@ -317,7 +345,7 @@ export default function PajakBroCalculator() {
                 </div>
               </div>
               <div className="pt-6 text-center">
-                 <Button onClick={handleCheckCompliance} disabled={isPending} className="w-full md:w-auto">
+                 <Button onClick={handleCheckCompliance} disabled={isPending || isCalculating} className="w-full md:w-auto">
                     {isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -349,6 +377,8 @@ export default function PajakBroCalculator() {
                   </Alert>
                 )}
               </div>
+              </>
+              )}
             </CardContent>
           </Card>
         </div>
