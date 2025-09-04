@@ -278,7 +278,7 @@ export default function HomePage() {
         if (r.wp !== wp) return false;
         if (!checkPtkp(nilai, r.ptkp)) return false;
         
-        // Match specific conditions if they are not "N/A"
+        // Match specific conditions if they are not "N/A" for the user input
         if (fakturPajak !== 'N/A' && r.fakturPajak !== 'N/A' && r.fakturPajak !== fakturPajak) return false;
         if (asnStatus !== 'N/A' && r.asn !== 'N/A' && r.asn !== asnStatus) return false;
         if (asnGolongan !== 'N/A' && r.golongan !== 'N/A' && r.golongan !== asnGolongan) return false;
@@ -324,9 +324,9 @@ export default function HomePage() {
 
     // Determine DPP automatically based on the matched rule
     if (rule.jenisTransaksi === "Makan Minum") {
-        dpp = Math.round(nilai * (100 / 110));
+        dpp = Math.round(nilai / 1.1); // DPP = 100/110 * Nilai
     } else if (rule.kenaPPN) {
-        dpp = Math.round(nilai * (100 / 111));
+        dpp = Math.round(nilai / 1.11); // DPP = 100/111 * Nilai
     }
 
     // Calculate PPN if applicable
@@ -354,10 +354,10 @@ export default function HomePage() {
       subKegiatan: selectedKegiatan,
       jenisTransaksi,
       wajibPajak: wp,
-      fakturPajak: rule.fakturPajak,
-      asn: rule.asn,
-      golongan: rule.golongan,
-      sertifikatKonstruksi: rule.sertifikatKonstruksi,
+      fakturPajak: fakturPajak,
+      asn: asnStatus,
+      golongan: asnGolongan,
+      sertifikatKonstruksi: sertifikatKonstruksi,
       nilaiTransaksi: nilai,
       jenisPajak: rule.jenisPajak,
       tarifPajak: String(rule.tarifPajak),
@@ -380,9 +380,16 @@ export default function HomePage() {
   const handleSaveAndShowDetails = () => {
     if (!calculationResult) return;
     
-    const newHistory = [calculationResult, ...calculationHistory];
+    // Ensure the latest optional data is included before saving
+    const finalResult = {
+        ...calculationResult,
+        namaBidang: selectedBidang,
+        subKegiatan: selectedKegiatan,
+    };
+    
+    const newHistory = [finalResult, ...calculationHistory];
     setCalculationHistory(newHistory);
-    sessionStorage.setItem('calculationResult', JSON.stringify(calculationResult));
+    sessionStorage.setItem('calculationResult', JSON.stringify(finalResult));
     router.push('/hasil');
   };
 
@@ -430,27 +437,6 @@ export default function HomePage() {
           </p>
         </header>
         
-        <div className="p-3 bg-orange-100 border-orange-200 rounded-lg overflow-hidden">
-            <div className="flex items-center gap-2 mb-2">
-               <Info className="h-5 w-5 text-orange-700"/>
-               <h3 className="font-semibold text-sm text-orange-800">Info Pajak</h3>
-            </div>
-             <div className="relative flex overflow-x-hidden text-xs text-orange-700">
-                <div className="animate-marquee whitespace-nowrap">
-                    <span className="mx-4">Pastikan semua data yang Anda masukkan sudah benar untuk hasil perhitungan yang akurat.</span>
-                    <span className="mx-4">Gunakan NPWP untuk mendapatkan tarif pajak yang lebih rendah pada beberapa jenis transaksi.</span>
-                    <span className="mx-4">Simpan bukti potong pajak Anda sebagai dokumentasi resmi.</span>
-                    <span className="mx-4">Batas waktu pelaporan SPT Tahunan adalah 31 Maret untuk Wajib Pajak Orang Pribadi.</span>
-                </div>
-                 <div className="absolute top-0 animate-marquee2 whitespace-nowrap">
-                    <span className="mx-4">Pastikan semua data yang Anda masukkan sudah benar untuk hasil perhitungan yang akurat.</span>
-                    <span className="mx-4">Gunakan NPWP untuk mendapatkan tarif pajak yang lebih rendah pada beberapa jenis transaksi.</span>
-                    <span className="mx-4">Simpan bukti potong pajak Anda sebagai dokumentasi resmi.</span>
-                    <span className="mx-4">Batas waktu pelaporan SPT Tahunan adalah 31 Maret untuk Wajib Pajak Orang Pribadi.</span>
-                </div>
-            </div>
-        </div>
-
         <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="w-full space-y-8 lg:sticky lg:top-8">
                 <Card className="relative bg-blue-50 border-blue-200">
@@ -648,4 +634,3 @@ export default function HomePage() {
   );
 }
 
-    
