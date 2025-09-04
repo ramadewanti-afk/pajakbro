@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useEffect, useState, Suspense } from 'react';
@@ -55,8 +54,10 @@ function HasilContent() {
             const encodedData = btoa(JSON.stringify(resultData));
             setQrCodeUrl(`${window.location.origin}/hasil?data=${encodedData}`);
         } else {
-            // Do not redirect immediately, let the render path handle it
-            // This can prevent issues with hydration or server/client mismatch
+            // Redirect on client-side if no data is found after checks.
+             if (typeof window !== 'undefined') {
+                router.push('/');
+            }
         }
 
         const storedLogoUrl = localStorage.getItem(LOGO_STORAGE_KEY);
@@ -80,10 +81,8 @@ function HasilContent() {
     }
     
     if (!data) {
-        // Redirect only on the client-side after determining data is missing
-        if (typeof window !== 'undefined') {
-            router.push('/');
-        }
+        // This state will be brief as the useEffect will redirect.
+        // It prevents rendering the report with null data.
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4">
                 <p>Data perhitungan tidak ditemukan. Anda akan diarahkan kembali.</p>
@@ -271,5 +270,3 @@ export default function HasilPage() {
         </Suspense>
     )
 }
-
-    
