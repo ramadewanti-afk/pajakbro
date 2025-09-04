@@ -137,18 +137,14 @@ export default function HasilPage() {
                                     <TableCell className="font-semibold">Tanggal & Waktu Dibuat</TableCell>
                                     <TableCell>: {formattedDate}</TableCell>
                                 </TableRow>
-                                {data.namaBidang && data.namaBidang.trim() !== '' && (
-                                     <TableRow>
-                                        <TableCell className="font-semibold">Nama Bidang atau Bagian</TableCell>
-                                        <TableCell>: {data.namaBidang}</TableCell>
-                                    </TableRow>
-                                )}
-                                {data.subKegiatan && data.subKegiatan.trim() !== '' && (
-                                    <TableRow>
-                                        <TableCell className="font-semibold">Sub Kegiatan</TableCell>
-                                        <TableCell>: {data.subKegiatan}</TableCell>
-                                    </TableRow>
-                                )}
+                                <TableRow>
+                                    <TableCell className="font-semibold">Nama Bidang atau Bagian</TableCell>
+                                    <TableCell>: {data.namaBidang || '-'}</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell className="font-semibold">Sub Kegiatan</TableCell>
+                                    <TableCell>: {data.subKegiatan || '-'}</TableCell>
+                                </TableRow>
                             </TableBody>
                         </Table>
 
@@ -163,30 +159,22 @@ export default function HasilPage() {
                                     <TableCell>Wajib Pajak</TableCell>
                                     <TableCell>: {data.wajibPajak}</TableCell>
                                 </TableRow>
-                                {data.fakturPajak && data.fakturPajak !== 'N/A' && (
-                                    <TableRow>
-                                        <TableCell>Faktur Pajak</TableCell>
-                                        <TableCell>: {data.fakturPajak}</TableCell>
-                                    </TableRow>
-                                )}
-                                {data.asn && data.asn !== 'N/A' && (
-                                    <TableRow>
-                                        <TableCell>ASN atau NON ASN</TableCell>
-                                        <TableCell>: {data.asn}</TableCell>
-                                    </TableRow>
-                                )}
-                                {data.golongan && data.golongan !== 'N/A' && (
-                                    <TableRow>
-                                        <TableCell>Golongan</TableCell>
-                                        <TableCell>: {data.golongan}</TableCell>
-                                    </TableRow>
-                                )}
-                                {data.sertifikatKonstruksi && data.sertifikatKonstruksi !== 'N/A' && (
-                                    <TableRow>
-                                        <TableCell>Sertifikat Konstruksi</TableCell>
-                                        <TableCell>: {data.sertifikatKonstruksi}</TableCell>
-                                    </TableRow>
-                                )}
+                                <TableRow>
+                                    <TableCell>Faktur Pajak</TableCell>
+                                    <TableCell>: {data.fakturPajak || '-'}</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell>ASN atau NON ASN</TableCell>
+                                    <TableCell>: {data.asn || '-'}</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell>Golongan</TableCell>
+                                    <TableCell>: {data.golongan || '-'}</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell>Sertifikat Konstruksi</TableCell>
+                                    <TableCell>: {data.sertifikatKonstruksi || '-'}</TableCell>
+                                </TableRow>
                             </TableBody>
                         </Table>
 
