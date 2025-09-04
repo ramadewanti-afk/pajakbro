@@ -5,7 +5,6 @@ import { SidebarProvider, Sidebar, SidebarInset, SidebarHeader, SidebarTrigger, 
 import { Home, History, LogOut, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { logoutAction } from "../login/actions";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";

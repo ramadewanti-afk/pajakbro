@@ -13,6 +13,7 @@ import {
   AlertCircle,
   LogIn,
   LogOut,
+  History as HistoryIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,6 @@ import { checkComplianceAction, calculateTaxAction } from "./actions";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { logoutAction } from "./login/actions";
 import { useRouter } from "next/navigation";
 
 
@@ -180,8 +180,8 @@ export default function PajakBroCalculator() {
   };
   
   const handleLogout = async () => {
-    await logoutAction();
-    router.push('/login');
+    await auth.signOut();
+    router.push('/');
   };
 
   const formatCurrency = (value: number) => {
@@ -208,7 +208,7 @@ export default function PajakBroCalculator() {
                     <div className="flex items-center gap-2">
                          <Button asChild variant="outline">
                             <Link href="/admin">
-                                Admin
+                                <HistoryIcon className="mr-2" /> Riwayat
                             </Link>
                         </Button>
                         <Button onClick={handleLogout} variant="outline">
