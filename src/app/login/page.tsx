@@ -3,12 +3,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { LogIn, TriangleAlert } from "lucide-react";
+import { LogIn, TriangleAlert, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Separator } from "@/components/ui/separator";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -52,6 +54,7 @@ export default function LoginPage() {
                             id="password" 
                             type="password" 
                             required 
+                            placeholder="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
@@ -64,13 +67,25 @@ export default function LoginPage() {
                             </AlertDescription>
                         </Alert>
                     )}
-                </CardContent>
-                <CardContent>
-                    <Button className="w-full" onClick={handleLogin}>
+                     <Button className="w-full" onClick={handleLogin}>
                         <LogIn className="mr-2 h-4 w-4" />
                         Login
                     </Button>
                 </CardContent>
+                <CardFooter className="flex flex-col space-y-4">
+                    <div className="relative w-full">
+                        <Separator />
+                        <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-white px-2 text-xs text-muted-foreground">
+                            ATAU
+                        </span>
+                    </div>
+                     <Link href="/register" passHref className="w-full">
+                        <Button variant="outline" className="w-full">
+                            <UserPlus className="mr-2 h-4 w-4" />
+                            Daftar Pengguna Baru
+                        </Button>
+                    </Link>
+                </CardFooter>
             </Card>
         </div>
     );
