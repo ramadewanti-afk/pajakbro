@@ -279,9 +279,10 @@ export default function HomePage() {
   };
 
   const availableTransactions = useMemo(() => {
-      const activeRuleTransactions = new Set(taxRules.filter(r => r.wp === wp && r.status === 'Aktif').map(r => r.jenisTransaksi));
-      return transactionTypes.filter(t => activeRuleTransactions.has(t.name));
-  }, [wp, taxRules, transactionTypes]);
+      // The original code filtered transactions based on the selected 'wp' (taxpayer type).
+      // This has been removed to always show all available transaction types.
+      return transactionTypes;
+  }, [transactionTypes]);
   
   const resetDynamicFields = () => {
       setFakturPajak("");
@@ -344,7 +345,7 @@ export default function HomePage() {
           </p>
         </header>
         
-        <div className="p-3 bg-orange-100 border border-orange-200 rounded-lg overflow-hidden">
+        <div className="p-3 bg-orange-100 border-orange-200 rounded-lg overflow-hidden">
             <div className="flex items-center gap-2 mb-2">
                <Info className="h-5 w-5 text-orange-700"/>
                <h3 className="font-semibold text-sm text-orange-800">Info Pajak</h3>
@@ -580,3 +581,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
