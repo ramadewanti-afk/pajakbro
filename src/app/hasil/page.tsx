@@ -10,32 +10,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from 'next/navigation';
 import QRCode from "react-qr-code";
 import { Separator } from '@/components/ui/separator';
-
-// Define a type for the calculation result data for better type safety
-type CalculationResult = {
-    id: number;
-    namaBidang: string;
-    subKegiatan: string;
-    jenisTransaksi: string;
-    wajibPajak: string;
-    fakturPajak: string;
-    asn: string;
-    golongan: string;
-    sertifikatKonstruksi: string;
-    nilaiTransaksi: number;
-    jenisPajak: string;
-    tarifPajak: string;
-    nilaiDpp: number;
-    pajakPph: number;
-    kodeKapPph: string;
-    pajakDaerah: number;
-    tarifPpn: string;
-    ppn: number;
-    kodeKapPpn: string;
-    totalPajak: number;
-    yangDibayarkan: number;
-    createdAt: string; // Added timestamp
-};
+import { CalculationResult } from '@/data/history';
 
 const LOGO_STORAGE_KEY = 'app-logo-url';
 const DEFAULT_LOGO_URL = 'https://placehold.co/80x80';

@@ -187,8 +187,11 @@ export default function HomePage() {
 
     if (rule.kenaPPN) {
         const [numerator, denominator] = rule.dppRatio.split('/').map(Number);
-        dpp = denominator ? nilai * (numerator / denominator) : nilai;
-        ppn = dpp * 0.11;
+        dpp = denominator ? Math.round(nilai * (numerator / denominator)) : nilai;
+        ppn = nilai - dpp;
+    } else {
+        dpp = nilai;
+        ppn = 0;
     }
 
     if (String(rule.tarifPajak).includes('%')) {
@@ -209,7 +212,7 @@ export default function HomePage() {
     
     const pajakDaerah = rule.jenisTransaksi === "Makan Minum" ? dpp * 0.10 : 0;
     const totalPajak = pph + ppn + pajakDaerah;
-    const yangDibayarkan = nilai - pph;
+    const yangDibayarkan = nilai - totalPajak;
 
     const result: CalculationResult = {
       id: Date.now(),
@@ -435,7 +438,7 @@ export default function HomePage() {
                                  </div>
                                  <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="Tidak Punya" id="sk-tidak" />
-                                    <Label htmlFor="sk-tidak">Tidak</Label>_
+                                    <Label htmlFor="sk-tidak">Tidak</Label>
                                  </div>
                               </RadioGroup>
                             </div>
@@ -520,5 +523,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
