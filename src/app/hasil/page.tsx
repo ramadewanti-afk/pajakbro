@@ -34,13 +34,18 @@ type CalculationResult = {
     yangDibayarkan: number;
 };
 
+const LOGO_STORAGE_KEY = 'app-logo-url';
+const DEFAULT_LOGO_URL = 'https://placehold.co/80x80';
+
 
 export default function HasilPage() {
     const router = useRouter();
     const [data, setData] = useState<CalculationResult | null>(null);
     const [loading, setLoading] = useState(true);
+    const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO_URL);
 
     useEffect(() => {
+        // Load data from sessionStorage
         const resultData = sessionStorage.getItem('calculationResult');
         if (resultData) {
             try {
@@ -53,6 +58,13 @@ export default function HasilPage() {
              // If no data, redirect back to home
             router.push('/');
         }
+        
+        // Load logo from localStorage
+        const storedLogoUrl = localStorage.getItem(LOGO_STORAGE_KEY);
+        if (storedLogoUrl) {
+            setLogoUrl(storedLogoUrl);
+        }
+
         setLoading(false);
     }, [router]);
 
@@ -76,7 +88,14 @@ export default function HasilPage() {
             <Card className="w-full max-w-4xl print:shadow-none print:border-none">
                 <CardHeader className="text-center">
                     <div className="flex items-center justify-center mb-4">
-                        <Image src="https://placehold.co/80x80" alt="Logo" width={60} height={60} data-ai-hint="tax calculator" />
+                        <Image 
+                            src={logoUrl} 
+                            alt="Logo" 
+                            width={60} 
+                            height={60} 
+                            data-ai-hint="tax calculator" 
+                            unoptimized
+                        />
                     </div>
                     <CardTitle className="text-2xl font-bold">HASIL PERHITUNGAN PAJAK</CardTitle>
                 </CardHeader>
