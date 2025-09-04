@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { MoreHorizontal, PlusCircle, Pencil, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import React from 'react';
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 // Form Dialog Component
 const RuleFormDialog = ({
@@ -334,11 +335,11 @@ export default function AturanPajakPage() {
                       </TableCell>
                       <TableCell className="font-mono">{rule.tarifPajak}</TableCell>
                        <TableCell>
-                          {rule.kenaPPN ? <Badge variant="default">Ya</Badge> : <Badge variant="destructive">Tidak</Badge>}
+                          {rule.kenaPPN ? <Badge>Ya</Badge> : <Badge variant="destructive">Tidak</Badge>}
                       </TableCell>
                       <TableCell>
                         {rule.status === 'Aktif' ? (
-                            <Badge variant="default">Aktif</Badge>
+                            <Badge>Aktif</Badge>
                         ) : (
                             <Badge variant="destructive">Tidak Aktif</Badge>
                         )}

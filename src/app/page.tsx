@@ -28,6 +28,7 @@ type AsnStatus = "ASN" | "NON ASN" | "N/A";
 type AsnGolongan = "I" | "II" | "III" | "IV" | "N/A";
 type FakturPajak = "Punya" | "Tidak Punya" | "N/A";
 type SertifikatKonstruksi = "Punya" | "Tidak Punya" | "N/A";
+type DikenakanPpn = "Ya" | "Tidak" | "N/A";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -49,6 +50,11 @@ const generateShortId = () => {
 const checkPtkp = (value: number, ptkp: string): boolean => {
     if (ptkp === "N/A" || !ptkp) return true; // Matches all if not specified
     
+    if (ptkp.startsWith('>=')) {
+        const limit = parseFloat(ptkp.substring(2));
+        return !isNaN(limit) && value >= limit;
+    }
+
     if (ptkp.startsWith('>')) {
         const limit = parseFloat(ptkp.substring(1));
         return !isNaN(limit) && value > limit;
@@ -57,6 +63,11 @@ const checkPtkp = (value: number, ptkp: string): boolean => {
     if (ptkp.startsWith('<=')) {
         const limit = parseFloat(ptkp.substring(2));
         return !isNaN(limit) && value <= limit;
+    }
+
+    if (ptkp.startsWith('<')) {
+        const limit = parseFloat(ptkp.substring(1));
+        return !isNaN(limit) && value < limit;
     }
     
     if (ptkp.includes('-')) {
@@ -228,13 +239,13 @@ export default function HomePage() {
   const [selectedBidang, setSelectedBidang] = useState<string>("");
   const [selectedKegiatan, setSelectedKegiatan] = useState<string>("");
 
-
   // Dynamic fields for specific conditions
   const [fakturPajak, setFakturPajak] = useState<FakturPajak>("N/A");
   const [asnStatus, setAsnStatus] = useState<AsnStatus>("N/A");
   const [asnGolongan, setAsnGolongan] = useState<AsnGolongan>("N/A");
   const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState<SertifikatKonstruksi>("N/A");
-  
+  const [dikenakanPpn, setDikenakanPpn] = useState<DikenakanPpn>("N/A");
+
   // Calculation and history state
   const [error, setError] = useState<string>("");
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
@@ -287,6 +298,12 @@ export default function HomePage() {
         if (rule.asn !== 'N/A' && rule.asn === asnStatus) score++;
         if (rule.golongan !== 'N/A' && rule.golongan === asnGolongan) score++;
         if (rule.sertifikatKonstruksi !== 'N/A' && rule.sertifikatKonstruksi === sertifikatKonstruksi) score++;
+        // Add score for PPN match
+        if (dikenakanPpn !== 'N/A') {
+            if ((dikenakanPpn === 'Ya' && rule.kenaPPN) || (dikenakanPpn === 'Tidak' && !rule.kenaPPN)) {
+                score++;
+            }
+        }
         
         // Also score based on how many "N/A" the rule has, lower is better (more specific)
         const naCount = (rule.fakturPajak === 'N/A' ? 1 : 0) + (rule.asn === 'N/A' ? 1 : 0) + (rule.golongan === 'N/A' ? 1 : 0) + (rule.sertifikatKonstruksi === 'N/A' ? 1 : 0);
@@ -326,7 +343,7 @@ export default function HomePage() {
     setError("");
     performCalculation(nilai, rule);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
+  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi, dikenakanPpn]);
 
   
  const performCalculation = (nilai: number, rule: Transaction) => {
@@ -425,6 +442,7 @@ export default function HomePage() {
       setAsnStatus("N/A");
       setAsnGolongan("N/A");
       setSertifikatKonstruksi("N/A");
+      setDikenakanPpn("N/A");
       setError("");
       setCalculationResult(null);
   }
@@ -548,6 +566,27 @@ export default function HomePage() {
                        <div>
                           <Label className="text-sm text-muted-foreground">Kondisi Spesifik (jika ada)</Label>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-white mt-2">
+                             <div className="space-y-2">
+                                <Label>Dikenakan PPN?</Label>
+                                <RadioGroup
+                                    value={dikenakanPpn}
+                                    onValueChange={(v) => setDikenakanPpn(v as DikenakanPpn)}
+                                    className="flex space-x-4 pt-2"
+                                >
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="Ya" id="ppn-ya" />
+                                        <Label htmlFor="ppn-ya">Ya</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="Tidak" id="ppn-tidak" />
+                                        <Label htmlFor="ppn-tidak">Tidak</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="N/A" id="ppn-na" />
+                                        <Label htmlFor="ppn-na">N/A</Label>
+                                    </div>
+                                </RadioGroup>
+                            </div>
                             <div className="space-y-2">
                               <Label>Punya Faktur Pajak?</Label>
                               <RadioGroup 
