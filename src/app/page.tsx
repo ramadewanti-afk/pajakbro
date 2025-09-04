@@ -336,7 +336,7 @@ export default function HomePage() {
     setError("");
     performCalculation(nilai, rule);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
+  }, [nilaiTransaksi, jenisTransaksi, wp]);
 
   
  const performCalculation = (nilai: number, rule: Transaction) => {
@@ -760,6 +760,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-
-    
