@@ -53,7 +53,7 @@ export default function AdminLayout({
                   isActive={pathname === '/admin/subkegiatan'}
                 >
                   <ListTree />
-                  Manajemen Data
+                  Master Data Aturan Pajak
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

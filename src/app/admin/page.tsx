@@ -20,7 +20,7 @@ export default function AdminPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ListTree className="h-6 w-6 text-primary" />
-              Manajemen Data Master
+              Master Data Aturan Pajak
             </CardTitle>
             <CardDescription>
               Kelola data master untuk jenis transaksi dan aturan pajak.
