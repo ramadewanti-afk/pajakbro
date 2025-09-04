@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, ListTree, LogOut, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, ListTree, LogOut, ShieldCheck, BookType } from "lucide-react";
 import React from 'react';
 
 export default function AdminLayout({
@@ -54,6 +54,15 @@ export default function AdminLayout({
                 >
                   <ListTree />
                   Master Data Aturan Pajak
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  href="/admin/jenis-transaksi"
+                  isActive={pathname === '/admin/jenis-transaksi'}
+                >
+                  <BookType />
+                  Jenis Transaksi
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
