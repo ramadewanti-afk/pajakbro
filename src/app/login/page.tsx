@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Card,
@@ -13,23 +13,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, LogIn } from "lucide-react";
+import { AlertCircle, LogIn, Loader2 } from "lucide-react";
+import { loginAction } from './actions';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleLogin = () => {
-    // Mock authentication
-    if (email === 'admin@pajak.bro' && password === 'admin123') {
-      // In a real app, you'd set a session cookie here
-      document.cookie = "auth=true; path=/";
-      router.push('/admin');
-    } else {
-      setError('Email atau password salah. Silakan coba lagi.');
-    }
+    setError('');
+    startTransition(async () => {
+      const result = await loginAction({ email, password });
+      if (result.error) {
+        setError(result.error);
+      } else {
+        router.push('/admin');
+        router.refresh(); // Refresh to make sure server session is picked up
+      }
+    });
   };
 
   return (
@@ -61,6 +65,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={isPending}
             />
           </div>
           <div className="grid gap-2">
@@ -71,11 +76,20 @@ export default function LoginPage() {
                 placeholder="admin123"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                 required
+                disabled={isPending}
             />
           </div>
-          <Button onClick={handleLogin} className="w-full mt-2">
-            Login
+          <Button onClick={handleLogin} disabled={isPending} className="w-full mt-2">
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Masuk...
+              </>
+            ) : (
+              'Login'
+            )}
           </Button>
             <Button variant="outline" onClick={() => router.push('/')} className="w-full">
                 Kembali ke Kalkulator

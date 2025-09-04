@@ -4,6 +4,7 @@ import { SidebarProvider, Sidebar, SidebarInset, SidebarHeader, SidebarTrigger, 
 import { Home, History, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { logoutAction } from "../login/actions";
 
 export default function AdminLayout({
   children,
@@ -12,9 +13,10 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
 
-  const handleLogout = () => {
-    document.cookie = "auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  const handleLogout = async () => {
+    await logoutAction();
     router.push('/login');
+    router.refresh();
   };
 
   return (
