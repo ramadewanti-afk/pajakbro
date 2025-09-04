@@ -12,13 +12,15 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { taxRules as initialTaxRules, Transaction } from "@/data/tax-rules";
 import { departments as initialDepartments } from "@/data/departments";
 import { activities as initialActivities } from "@/data/activities";
-import { transactionTypes as initialTransactionTypes } from "@/data/transaction-types";
+import { transactionTypes as initialTransactionTypes, TransactionType } from "@/data/transaction-types";
 import { calculationHistory as initialHistory, CalculationResult } from "@/data/history";
-import { Calculator, Coins, LogIn, History, ArrowRight, Search, FileWarning, MoreHorizontal, FileText, Trash2, CheckCircle, Info } from "lucide-react";
+import { Calculator, Coins, LogIn, History, ArrowRight, Search, FileWarning, MoreHorizontal, FileText, Trash2, CheckCircle, Info, ChevronsUpDown, Check } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
@@ -90,6 +92,83 @@ const CalculationResultDisplay = ({ result, onSave }: { result: CalculationResul
             </CardFooter>
         </Card>
     );
+};
+
+// Custom Combobox Component
+const TransactionCombobox = ({
+  transactions,
+  value,
+  onValueChange,
+}: {
+  transactions: TransactionType[];
+  value: string;
+  onValueChange: (value: string) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+
+  const filteredTransactions = useMemo(() => {
+    if (!searchValue) return transactions;
+    return transactions.filter(t => t.name.toLowerCase().includes(searchValue.toLowerCase()));
+  }, [transactions, searchValue]);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between"
+        >
+          {value ? transactions.find(t => t.name === value)?.name : "Pilih Jenis Transaksi"}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+        <div className="flex flex-col">
+          <div className="p-2 border-b">
+             <Input
+                placeholder="Cari jenis transaksi..."
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className="h-9"
+              />
+          </div>
+          <div className="max-h-[300px] overflow-y-auto p-1">
+             {filteredTransactions.length > 0 ? (
+                filteredTransactions.map((transaction) => (
+                <Button
+                  key={transaction.id}
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start text-left h-auto",
+                    value === transaction.name && "bg-accent text-accent-foreground"
+                  )}
+                  onClick={() => {
+                    onValueChange(transaction.name);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === transaction.name ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {transaction.name}
+                </Button>
+              ))
+             ) : (
+                <div className="p-2 text-center text-sm text-muted-foreground">
+                    Tidak ditemukan.
+                </div>
+             )}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 };
 
 
@@ -302,7 +381,6 @@ export default function HomePage() {
       setFakturPajak("");
       setAsnStatus("");
       setAsnGolongan("");
-      setSertifikatKonstruksi("");
       setError("");
       setCalculationResult(null);
   }
@@ -315,8 +393,6 @@ export default function HomePage() {
   const formatDate = (dateString: string) => {
      return new Date(dateString).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
   }
-
-  const currentRule = useMemo(findMatchingRule, [jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi, taxRules]);
 
   const showFakturPajak = useMemo(() => taxRules.some(r => r.jenisTransaksi === jenisTransaksi && r.wp === wp && r.fakturPajak !== 'N/A'), [taxRules, jenisTransaksi, wp]);
   const showAsnStatus = useMemo(() => taxRules.some(r => r.jenisTransaksi === jenisTransaksi && r.wp === wp && r.asn !== 'N/A'), [taxRules, jenisTransaksi, wp]);
@@ -407,16 +483,11 @@ export default function HomePage() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="jenis-transaksi">Jenis Transaksi</Label>
-                          <Select value={jenisTransaksi} onValueChange={handleTransactionChange}>
-                            <SelectTrigger id="jenis-transaksi">
-                              <SelectValue placeholder="Pilih Jenis Transaksi" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableTransactions.map(transaction => (
-                                <SelectItem key={transaction.id} value={transaction.name}>{transaction.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <TransactionCombobox
+                              transactions={availableTransactions}
+                              value={jenisTransaksi}
+                              onValueChange={handleTransactionChange}
+                           />
                         </div>
                       </div>
                       
