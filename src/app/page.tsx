@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { taxRules } from "@/data/tax-rules";
 import { departments } from "@/data/departments";
 import { activities } from "@/data/activities";
+import { transactionTypes } from "@/data/transaction-types";
 import { Calculator, Coins, LogIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -51,11 +52,13 @@ export default function HomePage() {
   const selectedTransaction = useMemo(() => {
     return taxRules.find(rule => rule.jenisTransaksi === jenisTransaksi && rule.wp === wp);
   }, [jenisTransaksi, wp]);
+  
+  // Filter available transaction types based on selected WP
+  const availableTransactions = useMemo(() => {
+      const activeRuleTransactions = new Set(taxRules.filter(r => r.wp === wp && r.status === 'Aktif').map(r => r.jenisTransaksi));
+      return transactionTypes.filter(t => activeRuleTransactions.has(t.name));
+  }, [wp]);
 
-  const uniqueTransactions = useMemo(() => {
-    const transactionNames = taxRules.map(rule => rule.jenisTransaksi);
-    return [...new Set(transactionNames)];
-  }, []);
 
   const handleCalculate = () => {
     const nilai = parseFloat(nilaiTransaksi);
@@ -244,8 +247,8 @@ export default function HomePage() {
                           <SelectValue placeholder="Pilih Jenis Transaksi" />
                         </SelectTrigger>
                         <SelectContent>
-                          {uniqueTransactions.filter(jt => taxRules.some(r => r.jenisTransaksi === jt && r.wp === wp && r.status === 'Aktif')).map(transaction => (
-                            <SelectItem key={transaction} value={transaction}>{transaction}</SelectItem>
+                          {availableTransactions.map(transaction => (
+                            <SelectItem key={transaction.id} value={transaction.name}>{transaction.name}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
