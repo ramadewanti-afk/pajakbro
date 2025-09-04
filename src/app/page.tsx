@@ -17,6 +17,7 @@ import { calculationHistory, CalculationResult } from "@/data/history";
 import { Calculator, Coins, LogIn, History, ArrowRight, Search, FileWarning, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Image from 'next/image';
 
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
@@ -250,232 +251,246 @@ export default function HomePage() {
 
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-2xl space-y-8">
-            <Card className="border-2 relative">
-                <CardHeader className="text-center">
-                    <div className="absolute top-4 right-4 flex gap-2">
-                        <Link href="/login" passHref>
-                            <Button variant="ghost" size="sm">
-                                <LogIn className="mr-2 h-4 w-4" />
-                                Admin
-                            </Button>
-                        </Link>
-                    </div>
-                    <div className="flex justify-center items-center gap-4 mb-2 pt-8">
-                        <Coins className="h-10 w-10 text-primary" />
-                        <CardTitle className="text-4xl font-bold tracking-tight">
-                            Kalkulator Pajak Bro
-                        </CardTitle>
-                    </div>
-                  <CardDescription>
-                    Hitung Pajak Penghasilan (PPh) dan PPN berdasarkan jenis transaksi dengan mudah dan akurat.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="nilai-transaksi">Nilai Transaksi (dalam Rupiah)</Label>
-                    <Input
-                      id="nilai-transaksi"
-                      type="number"
-                      placeholder="Contoh: 5000000"
-                      value={nilaiTransaksi}
-                      onChange={(e) => setNilaiTransaksi(e.target.value)}
-                      className="text-lg"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div className="space-y-2">
-                      <Label>Wajib Pajak (WP)</Label>
-                      <RadioGroup value={wp} onValueChange={handleWpChange} className="flex space-x-4 pt-2">
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="Orang Pribadi" id="op" />
-                          <Label htmlFor="op">Orang Pribadi</Label>
+    <div className="min-h-screen w-full bg-background">
+        <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center min-h-screen p-4 sm:p-6 lg:p-8">
+            <div className="w-full max-w-2xl mx-auto lg:mx-0 space-y-8">
+                <Card className="border-2 relative">
+                    <CardHeader className="text-center">
+                        <div className="absolute top-4 right-4 flex gap-2">
+                            <Link href="/login" passHref>
+                                <Button variant="ghost" size="sm">
+                                    <LogIn className="mr-2 h-4 w-4" />
+                                    Admin
+                                </Button>
+                            </Link>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="Badan Usaha" id="bu" />
-                          <Label htmlFor="bu">Badan Usaha</Label>
+                        <div className="flex justify-center items-center gap-4 mb-2 pt-8">
+                            <Coins className="h-10 w-10 text-primary" />
+                            <CardTitle className="text-4xl font-bold tracking-tight">
+                                Kalkulator Pajak Bro
+                            </CardTitle>
                         </div>
-                      </RadioGroup>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="jenis-transaksi">Jenis Transaksi</Label>
-                      <Select value={jenisTransaksi} onValueChange={handleTransactionChange}>
-                        <SelectTrigger id="jenis-transaksi">
-                          <SelectValue placeholder="Pilih Jenis Transaksi" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableTransactions.map(transaction => (
-                            <SelectItem key={transaction.id} value={transaction.name}>{transaction.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-muted/50">
+                      <CardDescription>
+                        Hitung Pajak Penghasilan (PPh) dan PPN berdasarkan jenis transaksi dengan mudah dan akurat.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
                       <div className="space-y-2">
-                        <Label htmlFor="bidang-bagian">Bidang / Bagian (Opsional)</Label>
-                        <Select value={selectedBidang} onValueChange={setSelectedBidang}>
-                            <SelectTrigger id="bidang-bagian">
-                                <SelectValue placeholder="Pilih Bidang/Bagian" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {departments.map(dep => <SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
+                        <Label htmlFor="nilai-transaksi">Nilai Transaksi (dalam Rupiah)</Label>
+                        <Input
+                          id="nilai-transaksi"
+                          type="number"
+                          placeholder="Contoh: 5000000"
+                          value={nilaiTransaksi}
+                          onChange={(e) => setNilaiTransaksi(e.target.value)}
+                          className="text-lg"
+                        />
                       </div>
-                       <div className="space-y-2">
-                        <Label htmlFor="sub-kegiatan">Sub Kegiatan (Opsional)</Label>
-                        <Select value={selectedKegiatan} onValueChange={setSelectedKegiatan}>
-                            <SelectTrigger id="sub-kegiatan">
-                                <SelectValue placeholder="Pilih Sub Kegiatan" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                 {activities.map(act => <SelectItem key={act.id} value={act.name}>{act.name}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                      </div>
-                   </div>
-                  
-                  {selectedTransaction && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-muted/50">
-                      {selectedTransaction.fakturPajak !== "N/A" && (
-                        <div className="space-y-2">
-                          <Label>Punya Faktur Pajak?</Label>
-                          <RadioGroup value={fakturPajak} onValueChange={(v) => setFakturPajak(v as FakturPajak)} className="flex space-x-4 pt-2">
-                             <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="Punya" id="fp-punya" />
-                                <Label htmlFor="fp-punya">Punya</Label>
-                             </div>
-                             <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="Tidak Punya" id="fp-tidak" />
-                                <Label htmlFor="fp-tidak">Tidak</Label>
-                             </div>
-                          </RadioGroup>
-                        </div>
-                      )}
-                       {selectedTransaction.asn !== "N/A" && (
-                        <div className="space-y-2">
-                            <Label>Status Kepegawaian</Label>
-                            <Select value={asnStatus} onValueChange={(v) => setAsnStatus(v as AsnStatus)}>
-                                <SelectTrigger><SelectValue placeholder="Pilih Status" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="ASN">ASN</SelectItem>
-                                    <SelectItem value="NON ASN">NON ASN</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                      )}
-                      {asnStatus === "ASN" && selectedTransaction.golongan !== "N/A" && (
-                         <div className="space-y-2">
-                            <Label>Golongan ASN</Label>
-                            <Select value={asnGolongan} onValueChange={(v) => setAsnGolongan(v as AsnGolongan)}>
-                                <SelectTrigger><SelectValue placeholder="Pilih Golongan" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="I">I</SelectItem>
-                                    <SelectItem value="II">II</SelectItem>
-                                    <SelectItem value="III">III</SelectItem>
-                                    <SelectItem value="IV">IV</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                      )}
-                      {selectedTransaction.sertifikatKonstruksi !== "N/A" && (
-                        <div className="space-y-2">
-                          <Label>Punya Sertifikat Konstruksi?</Label>
-                          <RadioGroup value={sertifikatKonstruksi} onValueChange={(v) => setSertifikatKonstruksi(v as SertifikatKonstruksi)} className="flex space-x-4 pt-2">
-                             <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="Punya" id="sk-punya" />
-                                <Label htmlFor="sk-punya">Punya</Label>
-                             </div>
-                             <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="Tidak Punya" id="sk-tidak" />
-                                <Label htmlFor="sk-tidak">Tidak</Label>
-                             </div>
-                          </RadioGroup>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {error && (
-                    <div className="p-4 rounded-md bg-destructive/10 text-destructive text-center font-medium">
-                        <p>{error}</p>
-                    </div>
-                  )}
-                  
-                </CardContent>
-                <CardFooter>
-                  <Button onClick={handleCalculate} className="w-full text-lg py-6" size="lg" disabled={!jenisTransaksi || !nilaiTransaksi}>
-                    <Calculator className="mr-2 h-5 w-5" />
-                    Hitung Pajak
-                  </Button>
-                </CardFooter>
-            </Card>
 
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                        <History className="h-6 w-6" />
-                        <CardTitle>Riwayat Perhitungan Terakhir</CardTitle>
-                    </div>
-                     <div className="relative w-full max-w-xs">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                            placeholder="Cari berdasarkan ID..." 
-                            className="pl-9"
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                         />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {filteredHistory.length > 0 ? (
-                        <ul className="space-y-2 max-h-[50vh] overflow-y-auto pr-2">
-                            {filteredHistory.slice(0, visibleHistoryCount).map((item) => (
-                                <li key={item.id}>
-                                    <button
-                                        onClick={() => viewHistoryDetails(item)}
-                                        className="w-full text-left p-3 rounded-md hover:bg-muted transition-colors border flex items-center justify-between"
-                                    >
-                                        <div>
-                                            <p className="font-semibold truncate">
-                                                <span className="font-mono text-primary mr-2">#{String(item.id).slice(-6)}</span>
-                                                {item.jenisTransaksi}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">{formatDate(item.createdAt)}</p>
-                                        </div>
-                                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                         <Alert className="bg-muted/50 border-dashed">
-                             <FileWarning className="h-4 w-4" />
-                            <AlertTitle>{searchTerm ? "Tidak Ditemukan" : "Riwayat Kosong"}</AlertTitle>
-                            <AlertDescription>
-                                {searchTerm ? `Tidak ada riwayat yang cocok dengan ID "${searchTerm}".` : "Anda belum melakukan perhitungan apapun. Hasil akan muncul di sini."}
-                            </AlertDescription>
-                        </Alert>
-                    )}
-                </CardContent>
-                {filteredHistory.length > visibleHistoryCount && (
-                    <CardFooter className="pt-4 border-t">
-                        <Button
-                            variant="secondary"
-                            className="w-full"
-                            onClick={() => setVisibleHistoryCount(prev => prev + ITEMS_PER_PAGE)}
-                        >
-                            <MoreHorizontal className="mr-2 h-4 w-4" />
-                            Muat Lebih Banyak ({visibleHistoryCount}/{filteredHistory.length})
-                        </Button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div className="space-y-2">
+                          <Label>Wajib Pajak (WP)</Label>
+                          <RadioGroup value={wp} onValueChange={handleWpChange} className="flex space-x-4 pt-2">
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Orang Pribadi" id="op" />
+                              <Label htmlFor="op">Orang Pribadi</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Badan Usaha" id="bu" />
+                              <Label htmlFor="bu">Badan Usaha</Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="jenis-transaksi">Jenis Transaksi</Label>
+                          <Select value={jenisTransaksi} onValueChange={handleTransactionChange}>
+                            <SelectTrigger id="jenis-transaksi">
+                              <SelectValue placeholder="Pilih Jenis Transaksi" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableTransactions.map(transaction => (
+                                <SelectItem key={transaction.id} value={transaction.name}>{transaction.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-muted/50">
+                          <div className="space-y-2">
+                            <Label htmlFor="bidang-bagian">Bidang / Bagian (Opsional)</Label>
+                            <Select value={selectedBidang} onValueChange={setSelectedBidang}>
+                                <SelectTrigger id="bidang-bagian">
+                                    <SelectValue placeholder="Pilih Bidang/Bagian" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {departments.map(dep => <SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                          </div>
+                           <div className="space-y-2">
+                            <Label htmlFor="sub-kegiatan">Sub Kegiatan (Opsional)</Label>
+                            <Select value={selectedKegiatan} onValueChange={setSelectedKegiatan}>
+                                <SelectTrigger id="sub-kegiatan">
+                                    <SelectValue placeholder="Pilih Sub Kegiatan" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                     {activities.map(act => <SelectItem key={act.id} value={act.name}>{act.name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                          </div>
+                       </div>
+                      
+                      {selectedTransaction && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-muted/50">
+                          {selectedTransaction.fakturPajak !== "N/A" && (
+                            <div className="space-y-2">
+                              <Label>Punya Faktur Pajak?</Label>
+                              <RadioGroup value={fakturPajak} onValueChange={(v) => setFakturPajak(v as FakturPajak)} className="flex space-x-4 pt-2">
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Punya" id="fp-punya" />
+                                    <Label htmlFor="fp-punya">Punya</Label>
+                                 </div>
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Tidak Punya" id="fp-tidak" />
+                                    <Label htmlFor="fp-tidak">Tidak</Label>
+                                 </div>
+                              </RadioGroup>
+                            </div>
+                          )}
+                           {selectedTransaction.asn !== "N/A" && (
+                            <div className="space-y-2">
+                                <Label>Status Kepegawaian</Label>
+                                <Select value={asnStatus} onValueChange={(v) => setAsnStatus(v as AsnStatus)}>
+                                    <SelectTrigger><SelectValue placeholder="Pilih Status" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ASN">ASN</SelectItem>
+                                        <SelectItem value="NON ASN">NON ASN</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                          )}
+                          {asnStatus === "ASN" && selectedTransaction.golongan !== "N/A" && (
+                             <div className="space-y-2">
+                                <Label>Golongan ASN</Label>
+                                <Select value={asnGolongan} onValueChange={(v) => setAsnGolongan(v as AsnGolongan)}>
+                                    <SelectTrigger><SelectValue placeholder="Pilih Golongan" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="I">I</SelectItem>
+                                        <SelectItem value="II">II</SelectItem>
+                                        <SelectItem value="III">III</SelectItem>
+                                        <SelectItem value="IV">IV</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                          )}
+                          {selectedTransaction.sertifikatKonstruksi !== "N/A" && (
+                            <div className="space-y-2">
+                              <Label>Punya Sertifikat Konstruksi?</Label>
+                              <RadioGroup value={sertifikatKonstruksi} onValueChange={(v) => setSertifikatKonstruksi(v as SertifikatKonstruksi)} className="flex space-x-4 pt-2">
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Punya" id="sk-punya" />
+                                    <Label htmlFor="sk-punya">Punya</Label>
+                                 </div>
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Tidak Punya" id="sk-tidak" />
+                                    <Label htmlFor="sk-tidak">Tidak</Label>
+                                 </div>
+                              </RadioGroup>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {error && (
+                        <div className="p-4 rounded-md bg-destructive/10 text-destructive text-center font-medium">
+                            <p>{error}</p>
+                        </div>
+                      )}
+                      
+                    </CardContent>
+                    <CardFooter>
+                      <Button onClick={handleCalculate} className="w-full text-lg py-6" size="lg" disabled={!jenisTransaksi || !nilaiTransaksi}>
+                        <Calculator className="mr-2 h-5 w-5" />
+                        Hitung Pajak
+                      </Button>
                     </CardFooter>
-                )}
-            </Card>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                            <History className="h-6 w-6" />
+                            <CardTitle>Riwayat Perhitungan Terakhir</CardTitle>
+                        </div>
+                         <div className="relative w-full max-w-xs">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                                placeholder="Cari berdasarkan ID..." 
+                                className="pl-9"
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                             />
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {filteredHistory.length > 0 ? (
+                            <ul className="space-y-2 max-h-[50vh] overflow-y-auto pr-2">
+                                {filteredHistory.slice(0, visibleHistoryCount).map((item) => (
+                                    <li key={item.id}>
+                                        <button
+                                            onClick={() => viewHistoryDetails(item)}
+                                            className="w-full text-left p-3 rounded-md hover:bg-muted transition-colors border flex items-center justify-between"
+                                        >
+                                            <div>
+                                                <p className="font-semibold truncate">
+                                                    <span className="font-mono text-primary mr-2">#{String(item.id).slice(-6)}</span>
+                                                    {item.jenisTransaksi}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">{formatDate(item.createdAt)}</p>
+                                            </div>
+                                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                             <Alert className="bg-muted/50 border-dashed">
+                                 <FileWarning className="h-4 w-4" />
+                                <AlertTitle>{searchTerm ? "Tidak Ditemukan" : "Riwayat Kosong"}</AlertTitle>
+                                <AlertDescription>
+                                    {searchTerm ? `Tidak ada riwayat yang cocok dengan ID "${searchTerm}".` : "Anda belum melakukan perhitungan apapun. Hasil akan muncul di sini."}
+                                </AlertDescription>
+                            </Alert>
+                        )}
+                    </CardContent>
+                    {filteredHistory.length > visibleHistoryCount && (
+                        <CardFooter className="pt-4 border-t">
+                            <Button
+                                variant="secondary"
+                                className="w-full"
+                                onClick={() => setVisibleHistoryCount(prev => prev + ITEMS_PER_PAGE)}
+                            >
+                                <MoreHorizontal className="mr-2 h-4 w-4" />
+                                Muat Lebih Banyak ({visibleHistoryCount}/{filteredHistory.length})
+                            </Button>
+                        </CardFooter>
+                    )}
+                </Card>
+            </div>
+             <div className="hidden lg:flex items-center justify-center">
+                <Image
+                    src="https://picsum.photos/800/1200"
+                    width={800}
+                    height={1200}
+                    alt="Ilustrasi Kalkulator Pajak"
+                    className="rounded-lg shadow-xl object-cover w-full h-auto max-h-[90vh]"
+                    data-ai-hint="tax calculation"
+                />
+            </div>
         </div>
     </div>
   );
 }
+
+    
