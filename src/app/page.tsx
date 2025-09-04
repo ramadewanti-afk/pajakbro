@@ -345,12 +345,12 @@ export default function HomePage() {
           </p>
         </header>
         
-        <div className="p-3 bg-muted/50 rounded-lg overflow-hidden">
+        <div className="p-3 bg-orange-100 border border-orange-200 rounded-lg overflow-hidden">
             <div className="flex items-center gap-2 mb-2">
-               <Info className="h-5 w-5 text-primary"/>
-               <h3 className="font-semibold text-sm">Info Pajak</h3>
+               <Info className="h-5 w-5 text-orange-700"/>
+               <h3 className="font-semibold text-sm text-orange-800">Info Pajak</h3>
             </div>
-             <div className="relative flex overflow-x-hidden text-xs text-muted-foreground">
+             <div className="relative flex overflow-x-hidden text-xs text-orange-700">
                 <div className="animate-marquee whitespace-nowrap">
                     <span className="mx-4">Pastikan semua data yang Anda masukkan sudah benar untuk hasil perhitungan yang akurat.</span>
                     <span className="mx-4">Gunakan NPWP untuk mendapatkan tarif pajak yang lebih rendah pada beberapa jenis transaksi.</span>
