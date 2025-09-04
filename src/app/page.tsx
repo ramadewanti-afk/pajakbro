@@ -82,7 +82,7 @@ const CalculationResultDisplay = ({ result, onSave }: { result: CalculationResul
                     <p className="font-mono text-right">{formatCurrency(result.yangDibayarkan)}</p>
                  </div>
             </CardContent>
-            <CardFooter className="flex justify-end">
+            <CardFooter className="flex justify-end bg-blue-100 border-t pt-4">
                 <Button onClick={onSave}>
                     <FileText className="mr-2 h-4 w-4" />
                     Simpan & Lihat Rincian Lengkap
@@ -367,7 +367,7 @@ export default function HomePage() {
 
         <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="w-full space-y-8 lg:sticky lg:top-8">
-                <Card className="border-2 relative">
+                <Card className="relative bg-blue-50 border-blue-200">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Calculator className="h-6 w-6" />
@@ -580,5 +580,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
