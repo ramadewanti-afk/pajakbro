@@ -29,7 +29,6 @@ export default function LoginPage() {
       const result = await loginAction({ email, password });
       if (result.success) {
         router.push('/admin');
-        router.refresh(); 
       } else if (result.error) {
         setError(result.error);
       }
