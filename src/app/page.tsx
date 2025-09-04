@@ -181,13 +181,14 @@ export default function HomePage() {
     return bestMatch;
   };
   
-  const performCalculation = (nilai: number, rule: Transaction) => {
+ const performCalculation = (nilai: number, rule: Transaction) => {
     let pph = 0;
     let ppn = 0;
     let pajakDaerah = 0;
     let dpp = nilai;
 
     // Recalculate DPP based on ratio if applicable (for PPN or Pajak Daerah)
+    // This applies to Makan Minum (Pajak Daerah) and any transaction with PPN
     if (rule.kenaPPN || rule.jenisTransaksi === "Makan Minum") {
         const [numerator, denominator] = rule.dppRatio.split('/').map(Number);
         if (denominator) {
@@ -214,7 +215,7 @@ export default function HomePage() {
     // Special case for Tukang Harian
     if (rule.jenisTransaksi.includes('Tukang Harian')) {
         if (nilai > 450000 && nilai <= 2500000) {
-            pph = Math.round((dpp - 450000) * 0.005); // Note: using DPP here may need review based on specific tax law
+            pph = Math.round((dpp - 450000) * 0.005);
         } else if (nilai > 2500000) {
              const applicableRule = taxRules.find(r => r.jenisTransaksi.includes('Tukang Harian') && r.ptkp === ">2500000");
              if(applicableRule) {
@@ -226,7 +227,7 @@ export default function HomePage() {
         }
     }
     
-    const totalPajak = Math.round(pph + ppn + pajakDaerah);
+    const totalPajak = Math.round(pph + ppn);
     const yangDibayarkan = Math.round(nilai - totalPajak);
 
     const result: CalculationResult = {
@@ -544,5 +545,7 @@ export default function HomePage() {
     
 
 
+
+    
 
     
