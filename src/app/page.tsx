@@ -127,7 +127,7 @@ const CalculationResultDisplay = ({ result, onSave }: { result: CalculationResul
                     <p className="font-mono text-right">{formatCurrency(result.yangDibayarkan)}</p>
                  </div>
             </CardContent>
-            <CardFooter className="flex justify-end bg-blue-100 border-t pt-4">
+            <CardFooter className="flex justify-end bg-blue-100/50 border-t pt-4">
                 <Button onClick={onSave}>
                     <FileText className="mr-2 h-4 w-4" />
                     Simpan & Lihat Rincian Lengkap
@@ -657,6 +657,14 @@ export default function HomePage() {
                             </Alert>
                         )}
                     </CardContent>
+                    {calculationHistory.length > ITEMS_PER_PAGE && (
+                        <CardFooter className="pt-4">
+                            <Button variant="outline" className="w-full" onClick={() => router.push('/riwayat')}>
+                                Lihat Semua Riwayat ({filteredHistory.length})
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        </CardFooter>
+                    )}
                 </Card>
             </div>
         </div>
