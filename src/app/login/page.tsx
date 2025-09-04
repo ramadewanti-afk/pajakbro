@@ -96,19 +96,10 @@ export default function LoginPage() {
                         Login
                     </Button>
                 </CardContent>
-                <CardFooter className="flex flex-col space-y-4">
-                    <div className="relative w-full">
-                        <Separator />
-                        <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-white px-2 text-xs text-muted-foreground">
-                            ATAU
-                        </span>
-                    </div>
-                     <Link href="/register" passHref className="w-full">
-                        <Button variant="outline" className="w-full">
-                            <UserPlus className="mr-2 h-4 w-4" />
-                            Daftar Pengguna Baru
-                        </Button>
-                    </Link>
+                <CardFooter>
+                     <Button variant="link" className="w-full" onClick={() => router.push('/')}>
+                        Kembali ke Kalkulator
+                    </Button>
                 </CardFooter>
             </Card>
         </div>

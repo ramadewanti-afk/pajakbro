@@ -33,18 +33,20 @@ const UserFormDialog = ({
   const [bidang, setBidang] = useState<string | undefined>("");
 
   useEffect(() => {
-    if (user) {
-      setName(user.name);
-      setEmail(user.email);
-      setRole(user.role);
-      setBidang(user.bidang);
-    } else {
-      setName("");
-      setEmail("");
-      setRole("User");
-      setBidang("");
+    if (isOpen) {
+        if (user) {
+          setName(user.name);
+          setEmail(user.email);
+          setRole(user.role);
+          setBidang(user.bidang);
+        } else {
+          setName("");
+          setEmail("");
+          setRole("User");
+          setBidang("");
+        }
     }
-  }, [user]);
+  }, [isOpen, user]);
 
   const handleSave = () => {
     if (!name || !email) return;
@@ -101,6 +103,19 @@ const UserFormDialog = ({
                 </SelectContent>
             </Select>
           </div>
+           {!user && (
+             <div className="grid grid-cols-4 items-center gap-4">
+               <Label htmlFor="password" className="text-right">
+                 Password
+               </Label>
+               <Input
+                 id="password"
+                 type="password"
+                 className="col-span-3"
+                 placeholder="Buat password awal"
+               />
+             </div>
+           )}
         </div>
         <DialogFooter>
           <DialogClose asChild><Button variant="outline">Batal</Button></DialogClose>
@@ -113,13 +128,13 @@ const UserFormDialog = ({
 
 
 export default function ManajemenPenggunaPage() {
-  const router = useRouter();
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const handleAddNew = () => {
-    router.push('/register');
+    setEditingUser(null);
+    setIsDialogOpen(true);
   };
 
   const handleEdit = (user: User) => {
@@ -140,7 +155,7 @@ export default function ManajemenPenggunaPage() {
         )
       );
     } else {
-      // Add new user (handled via registration page, but good to have)
+      // Add new user
       const newUser: User = {
         id: Date.now(), 
         name: userToSave.name,
