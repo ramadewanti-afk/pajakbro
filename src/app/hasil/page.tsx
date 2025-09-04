@@ -69,7 +69,7 @@ export default function HasilPage() {
         
         if (resultData) {
             setData(resultData);
-            if (typeof window !== 'undefined') {
+             if (typeof window !== 'undefined') {
                 setQrCodeUrl(`${window.location.origin}/hasil?id=${resultData.id}`);
             }
         }
@@ -91,7 +91,7 @@ export default function HasilPage() {
         const element = printRef.current;
         if (!element || !data) return;
 
-        const canvas = await html2canvas(element, { scale: 2 });
+        const canvas = await html2canvas(element, { scale: 1.5 });
         
         // Use default PNG format for lossless quality, ensuring QR code is scannable
         const imgData = canvas.toDataURL('image/png');
