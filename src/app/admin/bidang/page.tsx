@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoreHorizontal, PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { departments as initialDepartments, Department } from "@/data/departments";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 const ItemFormDialog = ({
   isOpen,
@@ -72,7 +73,7 @@ const ItemFormDialog = ({
 
 
 export default function BidangPage() {
-  const [items, setItems] = useState<Department[]>(initialDepartments);
+  const [items, setItems] = useLocalStorage<Department[]>("departments", initialDepartments);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Department | null>(null);
 

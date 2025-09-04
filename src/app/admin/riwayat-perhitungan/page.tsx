@@ -9,15 +9,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Eye, MoreHorizontal, ToggleLeft, ToggleRight, Trash2, History } from "lucide-react";
-import { calculationHistory, CalculationResult } from "@/data/history";
+import { calculationHistory as initialHistory, CalculationResult } from "@/data/history";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 export default function RiwayatPerhitunganPage() {
   const router = useRouter();
-  const [history, setHistory] = useState<CalculationResult[]>(calculationHistory);
+  const [history, setHistory] = useLocalStorage<CalculationResult[]>("calculationHistory", initialHistory);
 
   const formatCurrency = (value: number) => {
     if (typeof value !== 'number') return '0';
-    return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value);
+    const roundedValue = Math.round(value);
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(roundedValue);
   }
 
   const formatDate = (dateString: string) => {
@@ -40,11 +42,7 @@ export default function RiwayatPerhitunganPage() {
   };
   
   const handleDelete = (idToDelete: number) => {
-      const index = calculationHistory.findIndex(item => item.id === idToDelete);
-      if (index > -1) {
-          calculationHistory.splice(index, 1);
-          setHistory([...calculationHistory]);
-      }
+    setHistory(currentHistory => currentHistory.filter(item => item.id !== idToDelete));
   }
 
 
@@ -78,8 +76,8 @@ export default function RiwayatPerhitunganPage() {
                 <TableRow key={item.id}>
                   <TableCell className="font-mono text-xs">#{String(item.id).slice(-6)}</TableCell>
                   <TableCell className="font-medium max-w-xs truncate">{item.jenisTransaksi}</TableCell>
-                  <TableCell>Rp {formatCurrency(item.nilaiTransaksi)}</TableCell>
-                  <TableCell>Rp {formatCurrency(item.totalPajak)}</TableCell>
+                  <TableCell>{formatCurrency(item.nilaiTransaksi)}</TableCell>
+                  <TableCell>{formatCurrency(item.totalPajak)}</TableCell>
                   <TableCell className="text-muted-foreground text-xs">{formatDate(item.createdAt)}</TableCell>
                   <TableCell>
                      {item.status === 'Aktif' ? (

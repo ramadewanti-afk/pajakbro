@@ -15,6 +15,7 @@ import { departments } from "@/data/departments";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 const UserFormDialog = ({
   isOpen,
@@ -31,6 +32,7 @@ const UserFormDialog = ({
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"Admin" | "User">("User");
   const [bidang, setBidang] = useState<string | undefined>("");
+  const [storedDepartments] = useLocalStorage("departments", departments);
 
   useEffect(() => {
     if (isOpen) {
@@ -96,7 +98,7 @@ const UserFormDialog = ({
                     <SelectValue placeholder="Pilih Bidang" />
                 </SelectTrigger>
                 <SelectContent>
-                    {departments.map(dep => (
+                    {storedDepartments.map(dep => (
                         <SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>
                     ))}
                      <SelectItem value="Administrator">Administrator</SelectItem>
@@ -128,7 +130,7 @@ const UserFormDialog = ({
 
 
 export default function ManajemenPenggunaPage() {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useLocalStorage<User[]>("users", initialUsers);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 

@@ -28,6 +28,5 @@ export type CalculationResult = {
 
 // This acts as a simple in-memory "database" for the prototype.
 // In a real application, this would be replaced with a database like Firestore.
+// It will be initialized from localStorage if available.
 export let calculationHistory: CalculationResult[] = [];
-
-    

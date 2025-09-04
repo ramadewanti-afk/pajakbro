@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { taxRules, Transaction } from "@/data/tax-rules";
+import { taxRules as initialTaxRules, Transaction } from "@/data/tax-rules";
 import { transactionTypes } from "@/data/transaction-types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { MoreHorizontal, PlusCircle, Pencil, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import React from 'react';
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 // Form Dialog Component
 const RuleFormDialog = ({
@@ -242,7 +243,7 @@ const RuleFormDialog = ({
 
 
 export default function AturanPajakPage() {
-  const [rules, setRules] = React.useState<Transaction[]>(taxRules);
+  const [rules, setRules] = useLocalStorage<Transaction[]>("taxRules", initialTaxRules);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [editingRule, setEditingRule] = React.useState<Transaction | null>(null);
 

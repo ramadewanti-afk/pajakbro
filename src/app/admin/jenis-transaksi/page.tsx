@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoreHorizontal, PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { transactionTypes as initialTransactionTypes, TransactionType } from "@/data/transaction-types";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 const ItemFormDialog = ({
   isOpen,
@@ -75,7 +76,7 @@ const ItemFormDialog = ({
 
 
 export default function JenisTransaksiPage() {
-  const [items, setItems] = useState<TransactionType[]>(initialTransactionTypes);
+  const [items, setItems] = useLocalStorage<TransactionType[]>("transactionTypes", initialTransactionTypes);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<TransactionType | null>(null);
 

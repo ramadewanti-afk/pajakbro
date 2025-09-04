@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoreHorizontal, PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { activities as initialActivities, Activity } from "@/data/activities";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 const ItemFormDialog = ({
   isOpen,
@@ -72,7 +73,7 @@ const ItemFormDialog = ({
 
 
 export default function KegiatanPage() {
-  const [items, setItems] = useState<Activity[]>(initialActivities);
+  const [items, setItems] = useLocalStorage<Activity[]>("activities", initialActivities);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Activity | null>(null);
 

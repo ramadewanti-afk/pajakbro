@@ -1,26 +1,14 @@
 
 "use client";
 
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { taxRules } from "@/data/tax-rules";
-import { departments } from "@/data/departments";
-import { activities } from "@/data/activities";
+import { taxRules as initialTaxRules } from "@/data/tax-rules";
+import { departments as initialDepartments } from "@/data/departments";
+import { activities as initialActivities } from "@/data/activities";
 import { Briefcase, ClipboardList, ListTree, ShieldCheck, TrendingUp } from "lucide-react";
-import React from 'react';
-
-// Simulate transaction usage data
-const getPopularTransactions = () => {
-    // In a real app, this data would come from a database.
-    // For now, we'll simulate it by assigning random counts to unique transaction types.
-    const uniqueTransactions = [...new Set(taxRules.map(rule => rule.jenisTransaksi))];
-    const popular = uniqueTransactions.map(name => ({
-        name: name,
-        total: Math.floor(Math.random() * 100) + 10, // Random count between 10 and 110
-    })).sort((a, b) => b.total - a.total);
-    
-    return popular.slice(0, 5); // Return top 5
-};
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 const CHART_COLORS = [
     "hsl(var(--chart-1))",
@@ -32,7 +20,31 @@ const CHART_COLORS = [
 
 
 export default function AdminPage() {
-    const popularTransactions = getPopularTransactions();
+    const [taxRules] = useLocalStorage("taxRules", initialTaxRules);
+    const [departments] = useLocalStorage("departments", initialDepartments);
+    const [activities] = useLocalStorage("activities", initialActivities);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const popularTransactions = useMemo(() => {
+        if (!mounted) return [];
+        // In a real app, this data would come from a database.
+        // For now, we'll simulate it by assigning random counts to unique transaction types.
+        const uniqueTransactions = [...new Set(taxRules.map(rule => rule.jenisTransaksi))];
+        const popular = uniqueTransactions.map(name => ({
+            name: name,
+            total: Math.floor(Math.random() * 100) + 10, // Random count between 10 and 110
+        })).sort((a, b) => b.total - a.total);
+        
+        return popular.slice(0, 5); // Return top 5
+    }, [taxRules, mounted]);
+    
+    if (!mounted) {
+        return null; // or a loading skeleton
+    }
 
     return (
         <div className="space-y-8">

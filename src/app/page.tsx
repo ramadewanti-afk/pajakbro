@@ -10,15 +10,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { taxRules, Transaction } from "@/data/tax-rules";
-import { departments } from "@/data/departments";
-import { activities } from "@/data/activities";
-import { transactionTypes } from "@/data/transaction-types";
-import { calculationHistory, CalculationResult } from "@/data/history";
+import { taxRules as initialTaxRules, Transaction } from "@/data/tax-rules";
+import { departments as initialDepartments } from "@/data/departments";
+import { activities as initialActivities } from "@/data/activities";
+import { transactionTypes as initialTransactionTypes } from "@/data/transaction-types";
+import { calculationHistory as initialHistory, CalculationResult } from "@/data/history";
 import { Calculator, Coins, LogIn, History, ArrowRight, Search, FileWarning, MoreHorizontal, FileText, Trash2, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
 type AsnStatus = "ASN" | "NON ASN";
@@ -31,7 +33,8 @@ const ITEMS_PER_PAGE = 10;
 // Function to format currency
 const formatCurrency = (value: number) => {
     if (typeof value !== 'number') return 'Rp 0';
-    return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value);
+    const roundedValue = Math.round(value);
+    return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(roundedValue);
 }
 
 // Result display component
@@ -94,6 +97,13 @@ const CalculationResultDisplay = ({ result, onSave }: { result: CalculationResul
 export default function HomePage() {
   const router = useRouter();
   
+  // Persisted state from localStorage
+  const [taxRules] = useLocalStorage("taxRules", initialTaxRules);
+  const [departments] = useLocalStorage("departments", initialDepartments);
+  const [activities] = useLocalStorage("activities", initialActivities);
+  const [transactionTypes] = useLocalStorage("transactionTypes", initialTransactionTypes);
+  const [calculationHistory, setCalculationHistory] = useLocalStorage("calculationHistory", initialHistory);
+  
   // Master Data State
   const [jenisTransaksi, setJenisTransaksi] = useState<string>("");
   const [wp, setWp] = useState<WpType>("Orang Pribadi");
@@ -113,21 +123,21 @@ export default function HomePage() {
   // Calculation and history state
   const [error, setError] = useState<string>("");
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
-  const [history, setHistory] = useState<CalculationResult[]>([]);
+  
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [visibleHistoryCount, setVisibleHistoryCount] = useState<number>(ITEMS_PER_PAGE);
 
   useEffect(() => {
     sessionStorage.removeItem('calculationResult');
-    setHistory(calculationHistory.filter(item => item.status === 'Aktif').sort((a, b) => b.id - a.id));
   }, []);
   
   const filteredHistory = useMemo(() => {
-    if (!searchTerm) return history;
-    return history.filter(item => 
+    const activeHistory = calculationHistory.filter(item => item.status === 'Aktif').sort((a, b) => b.id - a.id);
+    if (!searchTerm) return activeHistory;
+    return activeHistory.filter(item => 
         String(item.id).slice(-6).toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [history, searchTerm]);
+  }, [calculationHistory, searchTerm]);
   
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchTerm(e.target.value);
@@ -153,6 +163,7 @@ export default function HomePage() {
 
     setError("");
     performCalculation(nilai, rule);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
 
 
@@ -200,7 +211,8 @@ export default function HomePage() {
         ppn = Math.round(nilai - dpp);
     }
     
-    // Special case for Makan Minum, it has its own tax.
+    // Special case for Makan Minum, it has its own tax. This tax is for information only
+    // and does not affect the total tax calculation for payment.
     if (rule.jenisTransaksi === "Makan Minum") {
         pajakDaerah = Math.round(dpp * 0.10); // 10% of DPP
     }
@@ -226,7 +238,7 @@ export default function HomePage() {
         }
     }
     
-    const totalPajak = Math.round(pph + ppn);
+    const totalPajak = Math.round(pph + ppn); // Pajak daerah is not included in total tax
     const yangDibayarkan = Math.round(nilai - totalPajak);
 
     const result: CalculationResult = {
@@ -261,16 +273,16 @@ export default function HomePage() {
   const handleSaveAndShowDetails = () => {
     if (!calculationResult) return;
     
+    const newHistory = [calculationResult, ...calculationHistory];
+    setCalculationHistory(newHistory);
     sessionStorage.setItem('calculationResult', JSON.stringify(calculationResult));
-    calculationHistory.unshift(calculationResult);
-    setHistory([calculationResult, ...history]);
     router.push('/hasil');
   };
 
   const availableTransactions = useMemo(() => {
       const activeRuleTransactions = new Set(taxRules.filter(r => r.wp === wp && r.status === 'Aktif').map(r => r.jenisTransaksi));
       return transactionTypes.filter(t => activeRuleTransactions.has(t.name));
-  }, [wp]);
+  }, [wp, taxRules, transactionTypes]);
   
   const resetDynamicFields = () => {
       setFakturPajak("");
@@ -306,7 +318,7 @@ export default function HomePage() {
      return new Date(dateString).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
   }
 
-  const currentRule = useMemo(findMatchingRule, [jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
+  const currentRule = useMemo(findMatchingRule, [jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi, taxRules]);
 
 
   return (
