@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { taxRules as initialTaxRules } from "@/data/tax-rules";
+import { taxRules as initialTaxRules, Transaction } from "@/data/tax-rules";
 import { departments as initialDepartments } from "@/data/departments";
 import { activities as initialActivities } from "@/data/activities";
 import { transactionTypes as initialTransactionTypes, TransactionType } from "@/data/transaction-types";
@@ -21,14 +21,8 @@ import { Separator } from "@/components/ui/separator";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Transaction } from "@/data/tax-rules";
-
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
-type AsnStatus = "ASN" | "NON ASN" | "N/A";
-type AsnGolongan = "I" | "II" | "III" | "IV" | "N/A";
-type FakturPajak = "Punya" | "Tidak Punya" | "N/A";
-type SertifikatKonstruksi = "Punya" | "Tidak Punya" | "N/A";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -48,40 +42,40 @@ const generateShortId = () => {
 
 // Check if a value is within a PTKP range string (e.g., ">2000000" or "0-2000000")
 const checkPtkp = (value: number, ptkp: string): boolean => {
-    if (ptkp === "N/A" || !ptkp) return true;
-    
-    const cleanPtkp = ptkp.replace(/\s/g, '').replace(/,/g, '');
+  if (ptkp === "N/A" || !ptkp) return true;
+  
+  const cleanPtkp = ptkp.replace(/\s/g, '').replace(/,/g, '');
 
-    if (cleanPtkp.startsWith('>=')) {
-        const limit = parseFloat(cleanPtkp.substring(2));
-        return !isNaN(limit) && value >= limit;
-    }
+  if (cleanPtkp.startsWith('>=')) {
+    const limit = parseFloat(cleanPtkp.substring(2));
+    return !isNaN(limit) && value >= limit;
+  }
 
-    if (cleanPtkp.startsWith('>')) {
-        const limit = parseFloat(cleanPtkp.substring(1));
-        return !isNaN(limit) && value > limit;
-    }
+  if (cleanPtkp.startsWith('>')) {
+    const limit = parseFloat(cleanPtkp.substring(1));
+    return !isNaN(limit) && value > limit;
+  }
 
-    if (cleanPtkp.startsWith('<=')) {
-        const limit = parseFloat(cleanPtkp.substring(2));
-        return !isNaN(limit) && value <= limit;
-    }
+  if (cleanPtkp.startsWith('<=')) {
+    const limit = parseFloat(cleanPtkp.substring(2));
+    return !isNaN(limit) && value <= limit;
+  }
 
-    if (cleanPtkp.startsWith('<')) {
-        const limit = parseFloat(cleanPtkp.substring(1));
-        return !isNaN(limit) && value < limit;
+  if (cleanPtkp.startsWith('<')) {
+    const limit = parseFloat(cleanPtkp.substring(1));
+    return !isNaN(limit) && value < limit;
+  }
+  
+  if (cleanPtkp.includes('-')) {
+    const [min, max] = cleanPtkp.split('-').map(v => parseFloat(v));
+    if (!isNaN(min) && !isNaN(max)) {
+      return value >= min && value <= max;
     }
-    
-    if (cleanPtkp.includes('-')) {
-        const [min, max] = cleanPtkp.split('-').map(v => parseFloat(v));
-        if (!isNaN(min) && !isNaN(max)) {
-            return value >= min && value <= max;
-        }
-    }
-    
-    return false; // Return false if format is unrecognized
+  }
+  
+  // Default to false if no condition is met, or format is unrecognized
+  return false;
 };
-
 
 // Result display component
 const CalculationResultDisplay = ({ result, onSave }: { result: CalculationResult | null, onSave: () => void }) => {
@@ -241,11 +235,12 @@ export default function HomePage() {
   const [selectedBidang, setSelectedBidang] = useState<string>("");
   const [selectedKegiatan, setSelectedKegiatan] = useState<string>("");
 
-  // Dynamic fields for specific conditions
-  const [fakturPajak, setFakturPajak] = useState<FakturPajak>("N/A");
-  const [asnStatus, setAsnStatus] = useState<AsnStatus>("N/A");
-  const [asnGolongan, setAsnGolongan] = useState<AsnGolongan>("N/A");
-  const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState<SertifikatKonstruksi>("N/A");
+  // Specific condition states that the user might need to specify in some cases.
+  // These are not primary inputs but might be needed to disambiguate rules.
+  const [fakturPajak, setFakturPajak] = useState("N/A");
+  const [asnStatus, setAsnStatus] = useState("N/A");
+  const [asnGolongan, setAsnGolongan] = useState("N/A");
+  const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState("N/A");
 
   // Calculation and history state
   const [error, setError] = useState<string>("");
@@ -278,40 +273,41 @@ export default function HomePage() {
     if (isNaN(nilai)) return null;
 
     const candidates = taxRules.filter(r => {
+        // Must be active and match primary conditions
         if (r.status !== 'Aktif') return false;
-        
-        // Primary conditions that MUST match
         if (r.jenisTransaksi !== jenisTransaksi) return false;
         if (r.wp !== wp) return false;
-
-        // PTKP check is crucial
-        if (!checkPtkp(nilai, r.ptkp)) {
-            return false;
-        }
         
-        return true;
+        // PTKP check is crucial
+        return checkPtkp(nilai, r.ptkp);
     });
 
-    // From the candidates, find the most specific match
     if (candidates.length === 0) return null;
     if (candidates.length === 1) return candidates[0];
 
-    // If multiple candidates remain, we need to score them based on secondary conditions.
-    // A more specific rule (e.g., one that specifies "ASN" instead of "N/A") gets a higher score.
+    // If multiple candidates remain, find the most specific one.
+    // A rule is more specific if its secondary conditions are not "N/A".
     const scoredCandidates = candidates.map(rule => {
         let score = 0;
-        if (rule.fakturPajak !== 'N/A' && rule.fakturPajak === fakturPajak) score++;
-        if (rule.asn !== 'N/A' && rule.asn === asnStatus) score++;
-        if (rule.golongan !== 'N/A' && rule.golongan === asnGolongan) score++;
-        if (rule.sertifikatKonstruksi !== 'N/A' && rule.sertifikatKonstruksi === sertifikatKonstruksi) score++;
+        if (rule.fakturPajak !== 'N/A') score++;
+        if (rule.asn !== 'N/A') score++;
+        if (rule.golongan !== 'N/A') score++;
+        if (rule.sertifikatKonstruksi !== 'N/A') score++;
         return { rule, score };
-    });
+    }).sort((a, b) => b.score - a.score);
 
-    // Sort by score descending to get the most specific match
-    scoredCandidates.sort((a, b) => b.score - a.score);
+    // Filter for the highest score
+    const highestScore = scoredCandidates[0].score;
+    const bestCandidates = scoredCandidates.filter(c => c.score === highestScore);
+
+    // If there's still ambiguity, we can't proceed. 
+    // This indicates a configuration issue (e.g., two identical rules).
+    if (bestCandidates.length > 1) {
+         console.warn("Ambiguous rules found", bestCandidates.map(c => c.rule));
+         // We'll just return the first one as a fallback.
+    }
     
-    // Return the rule with the highest score
-    return scoredCandidates[0].rule;
+    return bestCandidates[0].rule;
   };
 
   // Effect to trigger automatic calculation
@@ -333,7 +329,7 @@ export default function HomePage() {
       performCalculation(nilai, rule);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
+  }, [nilaiTransaksi, jenisTransaksi, wp]);
 
   
  const performCalculation = (nilai: number, rule: Transaction) => {
@@ -341,30 +337,20 @@ export default function HomePage() {
     let ppn = 0;
     let pajakDaerah = 0;
     let dpp = nilai;
-    let dppRatio: string;
 
-    // Determine DPP Ratio automatically
+    // Determine DPP automatically based on the matched rule
     if (rule.jenisTransaksi === "Makan Minum") {
-        dppRatio = "100/110";
+        dpp = Math.round(nilai * (100 / 110));
     } else if (rule.kenaPPN) {
-        dppRatio = "100/111";
-    } else {
-        dppRatio = "100/100";
+        dpp = Math.round(nilai * (100 / 111));
     }
 
-    // Recalculate DPP based on the determined ratio
-    const [numerator, denominator] = dppRatio.split('/').map(Number);
-    if (denominator) {
-        dpp = Math.round(nilai * (numerator / denominator));
-    }
-    
     // Calculate PPN if applicable
     if (rule.kenaPPN) {
         ppn = Math.round(nilai - dpp);
     }
     
-    // Special case for Makan Minum, it has its own tax. This tax is for information only
-    // and does not affect the total tax calculation for payment.
+    // Special case for Makan Minum, which has a regional tax.
     if (rule.jenisTransaksi === "Makan Minum") {
         pajakDaerah = Math.round(dpp * 0.10); // 10% of DPP
     }
@@ -374,23 +360,8 @@ export default function HomePage() {
         const rate = parseFloat(String(rule.tarifPajak).replace('%', '')) / 100;
         pph = Math.round(dpp * rate);
     }
-
-    // Special case for Tukang Harian that has its own logic based on value
-    if (rule.jenisTransaksi.includes('Tukang Harian (Pekerja lepas)')) {
-        if (nilai > 450000 && nilai <= 2500000) {
-            pph = Math.round((dpp - 450000) * 0.005);
-        } else if (nilai > 2500000) {
-             const applicableRule = taxRules.find(r => r.jenisTransaksi.includes('Tukang Harian') && r.ptkp === ">2500000");
-             if(applicableRule) {
-                const rate = parseFloat(String(applicableRule.tarifPajak).replace('%','')) / 100
-                pph = Math.round(dpp * rate);
-             }
-        } else {
-            pph = 0;
-        }
-    }
     
-    const totalPajak = Math.round(pph + ppn); // Pajak daerah is not included in total tax
+    const totalPajak = Math.round(pph + ppn);
     const yangDibayarkan = Math.round(nilai - totalPajak);
 
     const result: CalculationResult = {
@@ -399,10 +370,10 @@ export default function HomePage() {
       subKegiatan: selectedKegiatan,
       jenisTransaksi,
       wajibPajak: wp,
-      fakturPajak: fakturPajak || rule.fakturPajak,
-      asn: asnStatus || rule.asn,
-      golongan: asnGolongan || rule.golongan,
-      sertifikatKonstruksi: sertifikatKonstruksi || rule.sertifikatKonstruksi,
+      fakturPajak: rule.fakturPajak,
+      asn: rule.asn,
+      golongan: rule.golongan,
+      sertifikatKonstruksi: rule.sertifikatKonstruksi,
       nilaiTransaksi: nilai,
       jenisPajak: rule.jenisPajak,
       tarifPajak: String(rule.tarifPajak),
@@ -434,28 +405,13 @@ export default function HomePage() {
   const availableTransactions = useMemo(() => {
       return transactionTypes;
   }, [transactionTypes]);
-  
-  const resetDynamicFields = () => {
-      setFakturPajak("N/A");
-      setAsnStatus("N/A");
-      setAsnGolongan("N/A");
-      setSertifikatKonstruksi("N/A");
-      setError("");
-      setInfoMessage("");
-      setCalculationResult(null);
-  }
-
-  const handleWpChange = (value: string) => {
-      setWp(value as WpType);
-      resetDynamicFields();
-  }
 
   const handleTransactionChange = (value: string) => {
       setJenisTransaksi(value);
-      // Reset specific fields when transaction changes, but keep WP and amount
-      resetDynamicFields();
+      setNilaiTransaksi(''); // Reset value to force recalculation
+      setCalculationResult(null);
+      setError("");
       
-      // Find and set info message based on PTKP thresholds
       const rulesForTransaction = taxRules.filter(r => r.jenisTransaksi === value);
       const ptkpRule = rulesForTransaction.find(r => r.ptkp && r.ptkp.startsWith('>'));
       
@@ -464,7 +420,7 @@ export default function HomePage() {
           const formattedValue = formatCurrency(parseInt(ptkpValue, 10));
           setInfoMessage(`Info: Untuk transaksi ini, nilai di atas ${formattedValue} akan dikenai PPh/PPN sesuai aturan yang berlaku.`);
       } else {
-          setInfoMessage(""); // Clear message if no threshold rule found
+          setInfoMessage("");
       }
   }
   
@@ -476,9 +432,6 @@ export default function HomePage() {
   const formatDate = (dateString: string) => {
      return new Date(dateString).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
   }
-
-  const showAsnGolongan = useMemo(() => asnStatus === 'ASN', [asnStatus]);
-
 
   return (
     <div className="min-h-screen w-full bg-background">
@@ -550,7 +503,7 @@ export default function HomePage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                          <div className="space-y-2">
                           <Label>Wajib Pajak (WP)</Label>
-                          <RadioGroup value={wp} onValueChange={handleWpChange} className="flex space-x-4 pt-2">
+                          <RadioGroup value={wp} onValueChange={(v) => setWp(v as WpType)} className="flex space-x-4 pt-2">
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem value="Orang Pribadi" id="op" />
                               <Label htmlFor="op">Orang Pribadi</Label>
@@ -579,80 +532,6 @@ export default function HomePage() {
                            </AlertDescription>
                         </Alert>
                       )}
-
-                      <Separator />
-
-                       <div>
-                          <Label className="text-sm text-muted-foreground">Kondisi Spesifik (jika ada)</Label>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-white mt-2">
-                            <div className="space-y-2">
-                              <Label>Punya Faktur Pajak?</Label>
-                              <RadioGroup 
-                                value={fakturPajak} 
-                                onValueChange={(v) => setFakturPajak(v as FakturPajak)} 
-                                className="flex space-x-4 pt-2"
-                              >
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Punya" id="fp-punya" />
-                                    <Label htmlFor="fp-punya">Punya</Label>
-                                 </div>
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Tidak Punya" id="fp-tidak" />
-                                    <Label htmlFor="fp-tidak">Tidak</Label>
-                                 </div>
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="N/A" id="fp-na" />
-                                    <Label htmlFor="fp-na">N/A</Label>
-                                 </div>
-                              </RadioGroup>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Status Kepegawaian</Label>
-                                <Select value={asnStatus} onValueChange={(v) => setAsnStatus(v as AsnStatus)}>
-                                    <SelectTrigger><SelectValue placeholder="Pilih Status" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ASN">ASN</SelectItem>
-                                        <SelectItem value="NON ASN">NON ASN</SelectItem>
-                                        <SelectItem value="N/A">N/A</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Golongan ASN</Label>
-                                <Select value={asnGolongan} onValueChange={(v) => setAsnGolongan(v as AsnGolongan)} disabled={!showAsnGolongan}>
-                                    <SelectTrigger><SelectValue placeholder="Pilih Golongan" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="I">I</SelectItem>
-                                        <SelectItem value="II">II</SelectItem>
-                                        <SelectItem value="III">III</SelectItem>
-                                        <SelectItem value="IV">IV</SelectItem>
-                                        <SelectItem value="N/A">N/A</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Punya Sertifikat Konstruksi?</Label>
-                              <RadioGroup 
-                                value={sertifikatKonstruksi} 
-                                onValueChange={(v) => setSertifikatKonstruksi(v as SertifikatKonstruksi)} 
-                                className="flex space-x-4 pt-2"
-                              >
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Punya" id="sk-punya" />
-                                    <Label htmlFor="sk-punya">Punya</Label>
-                                 </div>
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Tidak Punya" id="sk-tidak" />
-                                    <Label htmlFor="sk-tidak">Tidak</Label>
-                                 </div>
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="N/A" id="sk-na" />
-                                    <Label htmlFor="sk-na">N/A</Label>
-                                 </div>
-                              </RadioGroup>
-                            </div>
-                          </div>
-                      </div>
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-white">
                           <div className="space-y-2">
