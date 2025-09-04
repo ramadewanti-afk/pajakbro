@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { taxRules as initialTaxRules, Transaction } from "@/data/tax-rules";
+import { taxRules as initialTaxRules } from "@/data/tax-rules";
 import { departments as initialDepartments } from "@/data/departments";
 import { activities as initialActivities } from "@/data/activities";
 import { transactionTypes as initialTransactionTypes, TransactionType } from "@/data/transaction-types";
@@ -43,7 +43,7 @@ const generateShortId = () => {
 // Check if a value is within a PTKP range string (e.g., ">2000000" or "0-2000000")
 const checkPtkp = (value: number, ptkp: string): boolean => {
   if (ptkp === "N/A" || !ptkp) return true;
-  
+
   const cleanPtkp = ptkp.replace(/\s/g, '').replace(/,/g, '');
 
   if (cleanPtkp.startsWith('>=')) {
@@ -65,14 +65,14 @@ const checkPtkp = (value: number, ptkp: string): boolean => {
     const limit = parseFloat(cleanPtkp.substring(1));
     return !isNaN(limit) && value < limit;
   }
-  
+
   if (cleanPtkp.includes('-')) {
     const [min, max] = cleanPtkp.split('-').map(v => parseFloat(v));
     if (!isNaN(min) && !isNaN(max)) {
       return value >= min && value <= max;
     }
   }
-  
+
   return false;
 };
 
@@ -93,7 +93,7 @@ const CalculationResultDisplay = ({ result, onSave }: { result: CalculationResul
                  <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
                     <p className="text-muted-foreground">Jenis Pajak</p>
                     <p className="font-semibold text-right">{result.jenisPajak} ({result.tarifPajak})</p>
-                    
+
                     <p className="text-muted-foreground">Dasar Pengenaan Pajak (DPP)</p>
                     <p className="font-mono text-right">{formatCurrency(result.nilaiDpp)}</p>
 
@@ -117,7 +117,7 @@ const CalculationResultDisplay = ({ result, onSave }: { result: CalculationResul
                  <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                     <p className="font-bold text-lg">Total Pajak</p>
                     <p className="font-bold text-lg font-mono text-right">{formatCurrency(result.totalPajak)}</p>
-                    
+
                     <p className="text-muted-foreground">Nilai Dibayarkan ke Vendor</p>
                     <p className="font-mono text-right">{formatCurrency(result.yangDibayarkan)}</p>
                  </div>
@@ -217,25 +217,24 @@ const TransactionCombobox = ({
 
 export default function HomePage() {
   const router = useRouter();
-  
+
   // Persisted state from localStorage
   const [taxRules] = useLocalStorage("taxRules", initialTaxRules);
   const [departments] = useLocalStorage("departments", initialDepartments);
   const [activities] = useLocalStorage("activities", initialActivities);
   const [transactionTypes] = useLocalStorage("transactionTypes", initialTransactionTypes);
   const [calculationHistory, setCalculationHistory] = useLocalStorage<CalculationResult[]>("calculationHistory", initialHistory);
-  
+
   // Master Data State
   const [jenisTransaksi, setJenisTransaksi] = useState<string>("");
   const [wp, setWp] = useState<WpType>("Orang Pribadi");
   const [nilaiTransaksi, setNilaiTransaksi] = useState<string>("");
-  
+
   // Optional Data State
   const [selectedBidang, setSelectedBidang] = useState<string>("");
   const [selectedKegiatan, setSelectedKegiatan] = useState<string>("");
 
-  // Specific condition states that the user might need to specify in some cases.
-  // These are not primary inputs but might be needed to disambiguate rules.
+  // Specific condition states
   const [fakturPajak, setFakturPajak] = useState<"Punya" | "Tidak Punya" | "N/A">("N/A");
   const [asnStatus, setAsnStatus] = useState<"ASN" | "NON ASN" | "N/A">("N/A");
   const [asnGolongan, setAsnGolongan] = useState<"I" | "II" | "III" | "IV" | "N/A">("N/A");
@@ -244,23 +243,23 @@ export default function HomePage() {
   // Calculation and history state
   const [error, setError] = useState<string>("");
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
-  
+
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [visibleHistoryCount, setVisibleHistoryCount] = useState<number>(ITEMS_PER_PAGE);
 
   useEffect(() => {
     sessionStorage.removeItem('calculationResult');
   }, []);
-  
+
   const filteredHistory = useMemo(() => {
     const activeHistory = calculationHistory.filter(item => item.status === 'Aktif').sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
     if (!searchTerm) return activeHistory;
-    return activeHistory.filter(item => 
+    return activeHistory.filter(item =>
         item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.jenisTransaksi.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [calculationHistory, searchTerm]);
-  
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchTerm(e.target.value);
       setVisibleHistoryCount(ITEMS_PER_PAGE); // Reset pagination on new search
@@ -275,31 +274,47 @@ export default function HomePage() {
         if (r.jenisTransaksi !== jenisTransaksi) return false;
         if (r.wp !== wp) return false;
         if (!checkPtkp(nilai, r.ptkp)) return false;
-        
-        if (fakturPajak !== 'N/A' && r.fakturPajak !== 'N/A' && r.fakturPajak !== fakturPajak) return false;
-        if (asnStatus !== 'N/A' && r.asn !== 'N/A' && r.asn !== asnStatus) return false;
-        if (asnGolongan !== 'N/A' && r.golongan !== 'N/A' && r.golongan !== asnGolongan) return false;
-        if (sertifikatKonstruksi !== 'N/A' && r.sertifikatKonstruksi !== 'N/A' && r.sertifikatKonstruksi !== sertifikatKonstruksi) return false;
-        
-        return true;
-    });
 
-    if (candidates.length === 0) return null;
-    return candidates[0];
+        let score = 0;
+        let specificConditions = 0;
+
+        if (r.fakturPajak !== 'N/A') {
+            specificConditions++;
+            if (r.fakturPajak === fakturPajak) score++;
+        }
+        if (r.asn !== 'N/A') {
+            specificConditions++;
+            if (r.asn === asnStatus) score++;
+        }
+        if (r.golongan !== 'N/A') {
+            specificConditions++;
+            if (r.golongan === asnGolongan) score++;
+        }
+        if (r.sertifikatKonstruksi !== 'N/A') {
+            specificConditions++;
+            if (r.sertifikatKonstruksi === sertifikatKonstruksi) score++;
+        }
+        
+        return score === specificConditions;
+    });
+    
+    // In case of multiple matches (e.g., overlapping PTKP which shouldn't happen),
+    // we just take the first one. The logic relies on well-defined, non-overlapping rules.
+    return candidates.length > 0 ? candidates[0] : null;
   };
 
-  const performCalculation = () => {
+  const handleCalculate = () => {
     const nilai = parseFloat(nilaiTransaksi);
     if (isNaN(nilai) || nilai < 0 || !jenisTransaksi) {
+      setError("Silakan masukkan nilai transaksi dan pilih jenis transaksi yang valid.");
       setCalculationResult(null);
-      setError("");
       return;
     }
 
     const rule = findMatchingRule();
 
     if (!rule) {
-      setError("Kombinasi yang Anda pilih tidak memiliki aturan pajak yang aktif atau sesuai.");
+      setError("Kombinasi yang Anda pilih tidak memiliki aturan pajak yang aktif atau sesuai. Periksa kembali input Anda atau data master di halaman admin.");
       setCalculationResult(null);
     } else {
       setError("");
@@ -308,70 +323,70 @@ export default function HomePage() {
       let pajakDaerah = 0;
       let dpp = nilai;
 
+      // DPP Logic
       if (rule.jenisTransaksi === "Makan Minum") {
           dpp = Math.round(nilai / 1.1);
       } else if (rule.kenaPPN) {
           dpp = Math.round(nilai / 1.11);
       }
-
+      
+      // PPN Logic
       if (rule.kenaPPN) {
           ppn = Math.round(nilai - dpp);
       }
-      
+
+      // Pajak Daerah Logic
       if (rule.jenisTransaksi === "Makan Minum") {
           pajakDaerah = Math.round(dpp * 0.10);
       }
-
+      
+      // PPh Logic
       if (String(rule.tarifPajak).includes('%')) {
           const rate = parseFloat(String(rule.tarifPajak).replace('%', '')) / 100;
           pph = Math.round(dpp * rate);
       }
-      
+
       const totalPajak = Math.round(pph + ppn);
       const yangDibayarkan = Math.round(nilai - totalPajak);
 
       const result: CalculationResult = {
         id: generateShortId(),
+        // Capture the state values directly here
         namaBidang: selectedBidang,
         subKegiatan: selectedKegiatan,
         jenisTransaksi,
         wajibPajak: wp,
-        fakturPajak: fakturPajak,
+        fakturPajak,
         asn: asnStatus,
         golongan: asnGolongan,
-        sertifikatKonstruksi: sertifikatKonstruksi,
+        sertifikatKonstruksi,
         nilaiTransaksi: nilai,
         jenisPajak: rule.jenisPajak,
         tarifPajak: String(rule.tarifPajak),
         nilaiDpp: dpp,
         pajakPph: pph,
         kodeKapPph: rule.kodePajak,
-        pajakDaerah: pajakDaerah,
+        pajakDaerah,
         tarifPpn: rule.kenaPPN ? "11%" : "0%",
-        ppn: ppn,
+        ppn,
         kodeKapPpn: rule.kenaPPN ? rule.kodeKapPpn : "-",
-        totalPajak: totalPajak,
-        yangDibayarkan: yangDibayarkan,
+        totalPajak,
+        yangDibayarkan,
         createdAt: new Date().toISOString(),
         status: 'Aktif',
       };
-      
+
       setCalculationResult(result);
     }
   }
-
-  // Effect to trigger automatic calculation
-  useEffect(() => {
-    performCalculation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi, selectedBidang, selectedKegiatan]);
   
   const handleSaveAndShowDetails = () => {
-    if (!calculationResult) return;
+    if (!calculationResult) {
+        setError("Silakan lakukan perhitungan terlebih dahulu sebelum menyimpan.");
+        return;
+    };
     
-    // The result from state is already updated by the useEffect, so we can use it directly.
-    const newHistory = [calculationResult, ...calculationHistory];
-    setCalculationHistory(newHistory);
+    setCalculationHistory([calculationResult, ...calculationHistory]);
     sessionStorage.setItem('calculationResult', JSON.stringify(calculationResult));
     router.push('/hasil');
   };
@@ -382,10 +397,10 @@ export default function HomePage() {
 
   const handleTransactionChange = (value: string) => {
       setJenisTransaksi(value);
-      setCalculationResult(null); 
+      setCalculationResult(null);
       setError("");
   }
-  
+
   const viewHistoryDetails = (item: CalculationResult) => {
     sessionStorage.setItem('calculationResult', JSON.stringify(item));
     router.push('/hasil');
@@ -398,7 +413,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen w-full bg-background">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-        
+
         <header className="text-center relative">
             <div className="absolute top-0 right-0 flex gap-2">
                 <Link href="/login" passHref>
@@ -418,7 +433,7 @@ export default function HomePage() {
             Hitung Pajak Penghasilan (PPh) dan PPN berdasarkan jenis transaksi dengan mudah dan akurat.
           </p>
         </header>
-        
+
         <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="w-full space-y-8 lg:sticky lg:top-8">
                 <Card className="relative bg-blue-50 border-blue-200">
@@ -436,7 +451,10 @@ export default function HomePage() {
                           type="number"
                           placeholder="Contoh: 5000000"
                           value={nilaiTransaksi}
-                          onChange={(e) => setNilaiTransaksi(e.target.value)}
+                          onChange={(e) => {
+                            setNilaiTransaksi(e.target.value);
+                            setCalculationResult(null); // Reset result on value change
+                          }}
                           className="text-lg"
                         />
                       </div>
@@ -444,7 +462,10 @@ export default function HomePage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                          <div className="space-y-2">
                           <Label>Wajib Pajak (WP)</Label>
-                          <RadioGroup value={wp} onValueChange={(v) => setWp(v as WpType)} className="flex space-x-4 pt-2">
+                          <RadioGroup value={wp} onValueChange={(v) => {
+                              setWp(v as WpType);
+                              setCalculationResult(null);
+                           }} className="flex space-x-4 pt-2">
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem value="Orang Pribadi" id="op" />
                               <Label htmlFor="op">Orang Pribadi</Label>
@@ -466,12 +487,15 @@ export default function HomePage() {
                       </div>
 
                       {/* Specific Conditions Section */}
-                      <div className="p-4 border rounded-md bg-white space-y-4">
+                       <div className="p-4 border rounded-md bg-white space-y-4">
                           <p className="text-sm font-medium text-muted-foreground">Kondisi Spesifik (jika ada)</p>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                             <div className="space-y-2">
                                 <Label>Punya Faktur Pajak?</Label>
-                                <RadioGroup value={fakturPajak} onValueChange={(v) => setFakturPajak(v as any)} className="flex space-x-4 pt-2">
+                                <RadioGroup value={fakturPajak} onValueChange={(v) => {
+                                    setFakturPajak(v as any);
+                                    setCalculationResult(null);
+                                 }} className="flex space-x-4 pt-2">
                                     <div className="flex items-center space-x-2"><RadioGroupItem value="Punya" id="fp_punya" /><Label htmlFor="fp_punya">Punya</Label></div>
                                     <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak Punya" id="fp_tidak" /><Label htmlFor="fp_tidak">Tidak</Label></div>
                                     <div className="flex items-center space-x-2"><RadioGroupItem value="N/A" id="fp_na" /><Label htmlFor="fp_na">N/A</Label></div>
@@ -479,7 +503,10 @@ export default function HomePage() {
                             </div>
                             <div className="space-y-2">
                                 <Label>Status Kepegawaian</Label>
-                                <Select value={asnStatus} onValueChange={(v) => setAsnStatus(v as any)}>
+                                <Select value={asnStatus} onValueChange={(v) => {
+                                    setAsnStatus(v as any);
+                                    setCalculationResult(null);
+                                }}>
                                     <SelectTrigger><SelectValue/></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="N/A">N/A (Tidak Berlaku)</SelectItem>
@@ -490,7 +517,10 @@ export default function HomePage() {
                             </div>
                              <div className="space-y-2">
                                 <Label>Golongan ASN</Label>
-                                <Select value={asnGolongan} onValueChange={(v) => setAsnGolongan(v as any)}>
+                                <Select value={asnGolongan} onValueChange={(v) => {
+                                    setAsnGolongan(v as any);
+                                    setCalculationResult(null);
+                                }}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="N/A">N/A (Tidak Berlaku)</SelectItem>
@@ -503,7 +533,10 @@ export default function HomePage() {
                             </div>
                             <div className="space-y-2">
                                 <Label>Punya Sertifikat Konstruksi?</Label>
-                                <RadioGroup value={sertifikatKonstruksi} onValueChange={(v) => setSertifikatKonstruksi(v as any)} className="flex space-x-4 pt-2">
+                                <RadioGroup value={sertifikatKonstruksi} onValueChange={(v) => {
+                                    setSertifikatKonstruksi(v as any);
+                                    setCalculationResult(null);
+                                }} className="flex space-x-4 pt-2">
                                     <div className="flex items-center space-x-2"><RadioGroupItem value="Punya" id="sk_punya" /><Label htmlFor="sk_punya">Punya</Label></div>
                                     <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak Punya" id="sk_tidak" /><Label htmlFor="sk_tidak">Tidak</Label></div>
                                     <div className="flex items-center space-x-2"><RadioGroupItem value="N/A" id="sk_na" /><Label htmlFor="sk_na">N/A</Label></div>
@@ -511,11 +544,14 @@ export default function HomePage() {
                             </div>
                           </div>
                       </div>
-                      
+
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-white">
                           <div className="space-y-2">
                             <Label htmlFor="bidang-bagian">Bidang / Bagian (Opsional)</Label>
-                            <Select value={selectedBidang} onValueChange={setSelectedBidang}>
+                            <Select value={selectedBidang} onValueChange={(v) => {
+                                setSelectedBidang(v);
+                                setCalculationResult(null);
+                            }}>
                                 <SelectTrigger id="bidang-bagian">
                                     <SelectValue placeholder="Pilih Bidang/Bagian" />
                                 </SelectTrigger>
@@ -526,7 +562,10 @@ export default function HomePage() {
                           </div>
                            <div className="space-y-2">
                             <Label htmlFor="sub-kegiatan">Sub Kegiatan (Opsional)</Label>
-                            <Select value={selectedKegiatan} onValueChange={setSelectedKegiatan}>
+                            <Select value={selectedKegiatan} onValueChange={(v) => {
+                                setSelectedKegiatan(v);
+                                setCalculationResult(null);
+                            }}>
                                 <SelectTrigger id="sub-kegiatan">
                                     <SelectValue placeholder="Pilih Sub Kegiatan" />
                                 </SelectTrigger>
@@ -535,14 +574,18 @@ export default function HomePage() {
                                 </SelectContent>
                             </Select>
                           </div>
-                       </div>
-                      
+                       </div>>
+                       <Button onClick={handleCalculate} className="w-full text-lg py-6">
+                           <Calculator className="mr-2 h-5 w-5" />
+                           Hitung Pajak
+                       </Button>
+
                       {error && (
                         <div className="p-4 rounded-md bg-destructive/10 text-destructive text-center font-medium">
                             <p>{error}</p>
                         </div>
                       )}
-                      
+
                       <CalculationResultDisplay result={calculationResult} onSave={handleSaveAndShowDetails} />
 
                     </CardContent>
@@ -557,8 +600,8 @@ export default function HomePage() {
                         </div>
                          <div className="relative w-full">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                                placeholder="Cari berdasarkan ID atau jenis transaksi..." 
+                            <Input
+                                placeholder="Cari berdasarkan ID atau jenis transaksi..."
                                 className="pl-9"
                                 value={searchTerm}
                                 onChange={handleSearchChange}
