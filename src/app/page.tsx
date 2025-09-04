@@ -10,8 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { taxRules } from "@/data/tax-rules";
-import { Calculator, Coins } from "lucide-react";
+import { Calculator, Coins, LogIn } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
 type AsnStatus = "ASN" | "NON ASN";
@@ -144,9 +145,17 @@ export default function HomePage() {
     <div className="min-h-screen w-full lg:grid lg:grid-cols-2 bg-background">
       <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-2xl space-y-8">
-            <Card className="border-2">
+            <Card className="border-2 relative">
                 <CardHeader className="text-center">
-                    <div className="flex justify-center items-center gap-4 mb-2">
+                    <div className="absolute top-4 right-4">
+                        <Link href="/login" passHref>
+                            <Button variant="ghost" size="sm">
+                                <LogIn className="mr-2 h-4 w-4" />
+                                Admin
+                            </Button>
+                        </Link>
+                    </div>
+                    <div className="flex justify-center items-center gap-4 mb-2 pt-8">
                         <Coins className="h-10 w-10 text-primary" />
                         <CardTitle className="text-4xl font-bold tracking-tight">
                             Kalkulator Pajak Bro
