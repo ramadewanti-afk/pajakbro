@@ -40,7 +40,9 @@ const formatCurrency = (value: number) => {
 
 // Function to generate a short alphanumeric ID
 const generateShortId = () => {
-    return Math.random().toString(36).substring(2, 9).toUpperCase();
+    const timestampPart = Date.now().toString(36).slice(-3); // Get last 3 chars of timestamp
+    const randomPart = Math.random().toString(36).substring(2, 5); // Get 3 random chars
+    return (timestampPart + randomPart).toUpperCase();
 }
 
 
@@ -131,7 +133,7 @@ const TransactionCombobox = ({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
+      <PopoverContent
         className="p-0"
         style={{ width: 'var(--radix-popover-trigger-width)' }}
         >
