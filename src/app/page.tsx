@@ -591,7 +591,7 @@ export default function HomePage() {
                     </CardContent>
                 </Card>
             </div>
-            <div className="w-full space-y-8 lg:sticky lg:top-8">
+            <div className="w-full space-y-8">
                  <Card className="bg-red-50 border-red-200">
                     <CardHeader className="space-y-4">
                         <div className="flex items-center gap-2">
@@ -610,7 +610,7 @@ export default function HomePage() {
                     </CardHeader>
                     <CardContent>
                         {filteredHistory.length > 0 ? (
-                            <ul className="space-y-2 max-h-[70vh] overflow-y-auto pr-2">
+                            <ul className="space-y-2 pr-2">
                                 {filteredHistory.slice(0, visibleHistoryCount).map((item) => (
                                     <li key={item.id}>
                                         <button
