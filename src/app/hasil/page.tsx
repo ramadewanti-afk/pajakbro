@@ -149,7 +149,7 @@ export default function HasilPage() {
         <div className="bg-gray-100 p-4">
              <div className="w-full max-w-4xl mx-auto my-8">
                  <div ref={printRef} className="bg-white p-6 sm:p-8 rounded-lg border">
-                    <CardHeader className="bg-primary/10 rounded-t-lg flex flex-row items-start justify-between p-6 -m-8 mb-6 border-b">
+                    <CardHeader className="bg-primary/10 rounded-t-lg flex flex-row items-start justify-between p-6 -m-6 mb-6 border-b">
                         <div className="flex items-center gap-4">
                             <Image
                                 src={logoUrl}
@@ -164,19 +164,13 @@ export default function HasilPage() {
                                 <CardDescription>{reportSubtitle}</CardDescription>
                              </div>
                         </div>
-                         <div className="flex flex-col items-center gap-2 print:hidden">
+                         <div className="flex flex-col items-center gap-2 qr-code-container">
                             <div className="p-2 border rounded-lg bg-white">
                                 {qrCodeUrl && <QRCode value={qrCodeUrl} size={80} />}
                             </div>
-                             <p className="text-xs text-muted-foreground flex items-center gap-1">
+                             <p className="text-xs text-muted-foreground flex items-center gap-1 print:hidden">
                                 <QrCode className="h-3 w-3" /> Pindai untuk Berbagi
                             </p>
-                        </div>
-                        {/* Hidden element for PDF generation */}
-                        <div className="qr-code-pdf" style={{ display: 'none' }}>
-                            <div className="p-2 border rounded-lg bg-white">
-                                 {qrCodeUrl && <QRCode value={qrCodeUrl} size={80} />}
-                            </div>
                         </div>
                     </CardHeader>
                     <CardContent className="px-0 py-6">
