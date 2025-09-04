@@ -188,14 +188,13 @@ export default function HomePage() {
     let dpp = nilai;
 
     // Recalculate DPP based on ratio if applicable (for PPN or Pajak Daerah)
-    // This applies to Makan Minum (Pajak Daerah) and any transaction with PPN
     if (rule.kenaPPN || rule.jenisTransaksi === "Makan Minum") {
         const [numerator, denominator] = rule.dppRatio.split('/').map(Number);
         if (denominator) {
             dpp = Math.round(nilai * (numerator / denominator));
         }
     }
-
+    
     // Calculate PPN if applicable
     if (rule.kenaPPN) {
         ppn = Math.round(nilai - dpp);
@@ -232,8 +231,8 @@ export default function HomePage() {
 
     const result: CalculationResult = {
       id: Date.now(),
-      namaBidang: selectedBidang || "-",
-      subKegiatan: selectedKegiatan || "-",
+      namaBidang: selectedBidang,
+      subKegiatan: selectedKegiatan,
       jenisTransaksi,
       wajibPajak: wp,
       fakturPajak: fakturPajak || rule.fakturPajak,
@@ -539,13 +538,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
-
-    
-
-
-
-    
-
-    
