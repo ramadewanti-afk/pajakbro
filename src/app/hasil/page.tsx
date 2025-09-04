@@ -92,8 +92,8 @@ export default function HasilPage() {
 
         const canvas = await html2canvas(element, { scale: 2 });
         
-        // Use JPEG format with quality setting for compression
-        const imgData = canvas.toDataURL('image/jpeg', 0.9);
+        // Use default PNG format for lossless quality, ensuring QR code is scannable
+        const imgData = canvas.toDataURL('image/png');
         
         const pdf = new jsPDF({
             orientation: 'portrait',
@@ -112,7 +112,7 @@ export default function HasilPage() {
         let finalHeight = canvasHeight > pdfHeight - 20 ? pdfHeight - 20 : canvasHeight;
 
 
-        pdf.addImage(imgData, 'JPEG', 10, 10, canvasWidth, finalHeight);
+        pdf.addImage(imgData, 'PNG', 10, 10, canvasWidth, finalHeight);
         pdf.save(`laporan-pajak-${data.id}.pdf`);
     };
     
