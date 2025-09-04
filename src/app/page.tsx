@@ -73,7 +73,6 @@ const checkPtkp = (value: number, ptkp: string): boolean => {
     }
   }
   
-  // Default to false if no condition is met, or format is unrecognized
   return false;
 };
 
@@ -294,8 +293,7 @@ export default function HomePage() {
     return candidates[0];
   };
 
-  // Effect to trigger automatic calculation
-  useEffect(() => {
+  const performCalculation = () => {
     const nilai = parseFloat(nilaiTransaksi);
     if (isNaN(nilai) || nilai < 0 || !jenisTransaksi) {
       setCalculationResult(null);
@@ -310,86 +308,96 @@ export default function HomePage() {
       setCalculationResult(null);
     } else {
       setError("");
-      performCalculation(nilai, rule);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
+      let pph = 0;
+      let ppn = 0;
+      let pajakDaerah = 0;
+      let dpp = nilai;
 
-  
- const performCalculation = (nilai: number, rule: Transaction) => {
-    let pph = 0;
-    let ppn = 0;
-    let pajakDaerah = 0;
-    let dpp = nilai;
+      // Determine DPP automatically based on the matched rule
+      if (rule.jenisTransaksi === "Makan Minum") {
+          dpp = Math.round(nilai / 1.1); // DPP = 100/110 * Nilai
+      } else if (rule.kenaPPN) {
+          dpp = Math.round(nilai / 1.11); // DPP = 100/111 * Nilai
+      }
 
-    // Determine DPP automatically based on the matched rule
-    if (rule.jenisTransaksi === "Makan Minum") {
-        dpp = Math.round(nilai / 1.1); // DPP = 100/110 * Nilai
-    } else if (rule.kenaPPN) {
-        dpp = Math.round(nilai / 1.11); // DPP = 100/111 * Nilai
-    }
+      // Calculate PPN if applicable
+      if (rule.kenaPPN) {
+          ppn = Math.round(nilai - dpp);
+      }
+      
+      // Special case for Makan Minum, which has a regional tax.
+      if (rule.jenisTransaksi === "Makan Minum") {
+          pajakDaerah = Math.round(dpp * 0.10); // 10% of DPP
+      }
 
-    // Calculate PPN if applicable
-    if (rule.kenaPPN) {
-        ppn = Math.round(nilai - dpp);
-    }
-    
-    // Special case for Makan Minum, which has a regional tax.
-    if (rule.jenisTransaksi === "Makan Minum") {
-        pajakDaerah = Math.round(dpp * 0.10); // 10% of DPP
-    }
+      // Calculate PPh based on the final DPP
+      if (String(rule.tarifPajak).includes('%')) {
+          const rate = parseFloat(String(rule.tarifPajak).replace('%', '')) / 100;
+          pph = Math.round(dpp * rate);
+      }
+      
+      const totalPajak = Math.round(pph + ppn);
+      const yangDibayarkan = Math.round(nilai - totalPajak);
 
-    // Calculate PPh based on the final DPP
-    if (String(rule.tarifPajak).includes('%')) {
-        const rate = parseFloat(String(rule.tarifPajak).replace('%', '')) / 100;
-        pph = Math.round(dpp * rate);
+      const result: CalculationResult = {
+        id: generateShortId(),
+        namaBidang: selectedBidang,
+        subKegiatan: selectedKegiatan,
+        jenisTransaksi,
+        wajibPajak: wp,
+        fakturPajak: fakturPajak,
+        asn: asnStatus,
+        golongan: asnGolongan,
+        sertifikatKonstruksi: sertifikatKonstruksi,
+        nilaiTransaksi: nilai,
+        jenisPajak: rule.jenisPajak,
+        tarifPajak: String(rule.tarifPajak),
+        nilaiDpp: dpp,
+        pajakPph: pph,
+        kodeKapPph: rule.kodePajak,
+        pajakDaerah: pajakDaerah,
+        tarifPpn: rule.kenaPPN ? "11%" : "0%",
+        ppn: ppn,
+        kodeKapPpn: rule.kenaPPN ? rule.kodeKapPpn : "-",
+        totalPajak: totalPajak,
+        yangDibayarkan: yangDibayarkan,
+        createdAt: new Date().toISOString(),
+        status: 'Aktif',
+      };
+      
+      setCalculationResult(result);
     }
-    
-    const totalPajak = Math.round(pph + ppn);
-    const yangDibayarkan = Math.round(nilai - totalPajak);
-
-    const result: CalculationResult = {
-      id: generateShortId(),
-      namaBidang: selectedBidang,
-      subKegiatan: selectedKegiatan,
-      jenisTransaksi,
-      wajibPajak: wp,
-      fakturPajak: fakturPajak,
-      asn: asnStatus,
-      golongan: asnGolongan,
-      sertifikatKonstruksi: sertifikatKonstruksi,
-      nilaiTransaksi: nilai,
-      jenisPajak: rule.jenisPajak,
-      tarifPajak: String(rule.tarifPajak),
-      nilaiDpp: dpp,
-      pajakPph: pph,
-      kodeKapPph: rule.kodePajak,
-      pajakDaerah: pajakDaerah,
-      tarifPpn: rule.kenaPPN ? "11%" : "0%",
-      ppn: ppn,
-      kodeKapPpn: rule.kenaPPN ? rule.kodeKapPpn : "-",
-      totalPajak: totalPajak,
-      yangDibayarkan: yangDibayarkan,
-      createdAt: new Date().toISOString(),
-      status: 'Aktif',
-    };
-    
-    setCalculationResult(result);
   }
+
+  // Effect to trigger automatic calculation
+  useEffect(() => {
+    // This function will run whenever the core dependencies change.
+    performCalculation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
+  
+  // Effect to update optional data if the calculation result already exists
+  useEffect(() => {
+      if (calculationResult) {
+          setCalculationResult(prevResult => {
+              if (!prevResult) return null;
+              return {
+                  ...prevResult,
+                  namaBidang: selectedBidang,
+                  subKegiatan: selectedKegiatan,
+              }
+          })
+      }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBidang, selectedKegiatan]);
 
   const handleSaveAndShowDetails = () => {
     if (!calculationResult) return;
     
-    // Ensure the latest optional data is included before saving
-    const finalResult = {
-        ...calculationResult,
-        namaBidang: selectedBidang,
-        subKegiatan: selectedKegiatan,
-    };
-    
-    const newHistory = [finalResult, ...calculationHistory];
+    // The result from state is already updated by the useEffects, so we can use it directly.
+    const newHistory = [calculationResult, ...calculationHistory];
     setCalculationHistory(newHistory);
-    sessionStorage.setItem('calculationResult', JSON.stringify(finalResult));
+    sessionStorage.setItem('calculationResult', JSON.stringify(calculationResult));
     router.push('/hasil');
   };
 
@@ -399,8 +407,8 @@ export default function HomePage() {
 
   const handleTransactionChange = (value: string) => {
       setJenisTransaksi(value);
-      setNilaiTransaksi(''); // Reset value to force recalculation
-      setCalculationResult(null);
+      // Reset value to force recalculation if needed, or let useEffect handle it.
+      setCalculationResult(null); 
       setError("");
   }
   
@@ -633,4 +641,3 @@ export default function HomePage() {
     </div>
   );
 }
-
