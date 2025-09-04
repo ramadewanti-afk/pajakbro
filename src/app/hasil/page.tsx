@@ -32,6 +32,7 @@ type CalculationResult = {
     kodeKapPpn: string;
     totalPajak: number;
     yangDibayarkan: number;
+    createdAt: string; // Added timestamp
 };
 
 const LOGO_STORAGE_KEY = 'app-logo-url';
@@ -43,13 +44,23 @@ export default function HasilPage() {
     const [data, setData] = useState<CalculationResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO_URL);
+    const [formattedDate, setFormattedDate] = useState('');
 
     useEffect(() => {
         // Load data from sessionStorage
         const resultData = sessionStorage.getItem('calculationResult');
         if (resultData) {
             try {
-                setData(JSON.parse(resultData));
+                const parsedData = JSON.parse(resultData);
+                setData(parsedData);
+                 if (parsedData.createdAt) {
+                    setFormattedDate(
+                        new Date(parsedData.createdAt).toLocaleString('id-ID', {
+                            dateStyle: 'long',
+                            timeStyle: 'short',
+                        })
+                    );
+                }
             } catch (error) {
                 console.error("Failed to parse calculation result from session storage", error);
                 router.push('/'); // Redirect if data is corrupted
@@ -103,8 +114,12 @@ export default function HasilPage() {
                     <Table className="mb-6">
                         <TableBody>
                              <TableRow>
-                                <TableCell className="font-semibold w-1/3">ID</TableCell>
+                                <TableCell className="font-semibold w-1/3">ID Transaksi</TableCell>
                                 <TableCell className="w-2/3">: {data.id}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-semibold">Tanggal & Waktu Dibuat</TableCell>
+                                <TableCell>: {formattedDate || 'Memuat...'}</TableCell>
                             </TableRow>
                             {isApplicable(data.namaBidang) && (
                                 <TableRow>
@@ -198,8 +213,7 @@ export default function HasilPage() {
                             </TableRow>
                             <TableRow className="bg-blue-100 font-bold">
                                 <TableCell>Pajak PPh</TableCell>
-                                <TableCell>: Rp {formatCurrency(data.pajakPph)}</TableCell>
-                            </TableRow>
+                                <TableCell>: Rp {formatCurrency(data.pajakPph)}</TableCell>                            </TableRow>
                              <TableRow>
                                 <TableCell>Kode KAP E-Billing PPh</TableCell>
                                 <TableCell>: {data.kodeKapPph}</TableCell>

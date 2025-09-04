@@ -157,6 +157,7 @@ export default function HomePage() {
       kodeKapPpn: rule.kenaPPN ? "411211-100" : "-", // Example KODE PPN
       totalPajak: totalPajak,
       yangDibayarkan: yangDibayarkan,
+      createdAt: new Date().toISOString(), // Add creation timestamp
     };
     
     sessionStorage.setItem('calculationResult', JSON.stringify(resultData));
