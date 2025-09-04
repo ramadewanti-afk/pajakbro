@@ -201,10 +201,10 @@ export default function HomePage() {
 
     if (rule.jenisTransaksi.includes('Tukang Harian')) {
         if (nilai > 450000 && nilai <= 2500000) {
-            pph = (nilai - 450000) * 0.005;
+            pph = (dpp - 450000) * 0.005; // Note: using DPP here may need review based on specific tax law
         } else if (nilai > 2500000) {
              const applicableRule = taxRules.find(r => r.jenisTransaksi.includes('Tukang Harian') && r.ptkp === ">2500000");
-             if(applicableRule) pph = nilai * (parseFloat(String(applicableRule.tarifPajak).replace('%','')) / 100);
+             if(applicableRule) pph = dpp * (parseFloat(String(applicableRule.tarifPajak).replace('%','')) / 100);
         } else {
             pph = 0;
         }
@@ -523,3 +523,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
