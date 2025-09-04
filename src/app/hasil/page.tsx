@@ -27,6 +27,7 @@ function HasilContent() {
     const [loading, setLoading] = useState(true);
     const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO_URL);
     const [qrCodeUrl, setQrCodeUrl] = useState('');
+    const [isPrintReady, setIsPrintReady] = useState(false);
 
     useEffect(() => {
         let resultData = null;
@@ -54,8 +55,7 @@ function HasilContent() {
             const encodedData = btoa(JSON.stringify(resultData));
             setQrCodeUrl(`${window.location.origin}/hasil?data=${encodedData}`);
         } else {
-            // Redirect on client-side if no data is found after checks.
-             if (typeof window !== 'undefined') {
+            if (typeof window !== 'undefined') {
                 router.push('/');
             }
         }
@@ -71,6 +71,12 @@ function HasilContent() {
     const handlePrint = () => {
         window.print();
     };
+    
+    // The logo is the main external asset that can delay printing.
+    // We set print readiness only after it has loaded.
+    const handleLogoLoad = () => {
+        setIsPrintReady(true);
+    }
 
     if (loading) {
         return (
@@ -81,8 +87,6 @@ function HasilContent() {
     }
     
     if (!data) {
-        // This state will be brief as the useEffect will redirect.
-        // It prevents rendering the report with null data.
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4">
                 <p>Data perhitungan tidak ditemukan. Anda akan diarahkan kembali.</p>
@@ -108,6 +112,8 @@ function HasilContent() {
                             height={60}
                             data-ai-hint="tax calculator"
                             unoptimized
+                            onLoad={handleLogoLoad} // Set print readiness on load
+                            onError={handleLogoLoad} // Also set readiness on error to not block printing
                         />
                     </div>
                     <CardTitle className="text-2xl font-bold">HASIL PERHITUNGAN PAJAK</CardTitle>
@@ -247,7 +253,8 @@ function HasilContent() {
                     <Button variant="outline" onClick={() => router.push('/')}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
                     </Button>
-                    <Button onClick={handlePrint}>
+                    <Button onClick={handlePrint} disabled={!isPrintReady}>
+                        {!isPrintReady && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         <FileDown className="mr-2 h-4 w-4" /> Simpan sebagai PDF
                     </Button>
                 </CardFooter>
@@ -258,8 +265,6 @@ function HasilContent() {
 
 
 export default function HasilPage() {
-    // Suspense is used for client-side navigation transitions.
-    // It's a good practice to wrap the content in it.
     return (
         <Suspense fallback={
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -270,3 +275,5 @@ export default function HasilPage() {
         </Suspense>
     )
 }
+
+    
