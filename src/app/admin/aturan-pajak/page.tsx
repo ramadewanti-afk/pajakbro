@@ -104,12 +104,58 @@ const RuleFormDialog = ({
                             </SelectContent>
                         </Select>
                     </div>
+                    <div className="space-y-1.5">
+                        <Label>dan punya Faktur Pajak...</Label>
+                         <Select value={formData.fakturPajak} onValueChange={(v) => handleChange('fakturPajak', v)}>
+                            <SelectTrigger><SelectValue placeholder="Pilih Opsi Faktur" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="N/A">N/A (Tidak Berlaku)</SelectItem>
+                                <SelectItem value="Punya">Punya</SelectItem>
+                                <SelectItem value="Tidak Punya">Tidak Punya</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-1.5">
+                        <Label>dan status ASN...</Label>
+                         <Select value={formData.asn} onValueChange={(v) => handleChange('asn', v)}>
+                            <SelectTrigger><SelectValue placeholder="Pilih Status ASN" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="N/A">N/A (Tidak Berlaku)</SelectItem>
+                                <SelectItem value="ASN">ASN</SelectItem>
+                                <SelectItem value="NON ASN">NON ASN</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-1.5">
+                        <Label>dan Golongan...</Label>
+                         <Select value={formData.golongan} onValueChange={(v) => handleChange('golongan', v)}>
+                            <SelectTrigger><SelectValue placeholder="Pilih Golongan" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="N/A">N/A (Tidak Berlaku)</SelectItem>
+                                <SelectItem value="I">I</SelectItem>
+                                <SelectItem value="II">II</SelectItem>
+                                <SelectItem value="III">III</SelectItem>
+                                <SelectItem value="IV">IV</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-1.5">
+                        <Label>dan punya Sertifikat Konstruksi...</Label>
+                        <Select value={formData.sertifikatKonstruksi} onValueChange={(v) => handleChange('sertifikatKonstruksi', v)}>
+                            <SelectTrigger><SelectValue placeholder="Pilih Opsi Sertifikat" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="N/A">N/A (Tidak Berlaku)</SelectItem>
+                                <SelectItem value="Punya">Punya</SelectItem>
+                                <SelectItem value="Tidak Punya">Tidak Punya</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                      <div className="space-y-1.5 col-span-full">
                         <Label>dan Nilai Transaksi (PTKP)...</Label>
                         <Input
                             value={formData.ptkp || ''}
                             onChange={(e) => handleChange('ptkp', e.target.value)}
-                            placeholder="Contoh: >2000000 atau 0-450000"
+                            placeholder="Contoh: >2000000 atau 0-450000 atau N/A"
                         />
                     </div>
                 </div>
@@ -135,7 +181,15 @@ const RuleFormDialog = ({
                     </div>
                     <div className="space-y-1.5">
                         <Label>Kode Pajak PPh</Label>
-                        <Input value={formData.kodePajak} onChange={(e) => handleChange('kodePajak', e.target.value)} />
+                         <Select value={formData.kodePajak} onValueChange={(v) => handleChange('kodePajak', v)}>
+                            <SelectTrigger><SelectValue placeholder="Pilih Kode Pajak PPh" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="411121-100">411121-100 (PPh 21)</SelectItem>
+                                <SelectItem value="411122-100">411122-100 (PPh 22)</SelectItem>
+                                <SelectItem value="411124-100">411124-100 (PPh 23)</SelectItem>
+                                <SelectItem value="411128-409">411128-409 (Pasal 4(2) Konstruksi)</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="space-y-1.5">
                         <Label>DPP Rasio</Label>
@@ -157,7 +211,13 @@ const RuleFormDialog = ({
                     </div>
                      <div className="space-y-1.5">
                         <Label>Kode Pajak PPN</Label>
-                        <Input value={formData.kodeKapPpn} onChange={(e) => handleChange('kodeKapPpn', e.target.value)} placeholder="Isi jika kena PPN" />
+                        <Select value={formData.kodeKapPpn} onValueChange={(v) => handleChange('kodeKapPpn', v)}>
+                            <SelectTrigger><SelectValue placeholder="Pilih Kode Pajak PPN" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="-">- (Tidak ada PPN)</SelectItem>
+                                <SelectItem value="411211-100">411211-100 (PPN Dalam Negeri)</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </div>
@@ -331,7 +391,3 @@ export default function AturanPajakPage() {
     </>
   );
 }
-
-    
-
-    
