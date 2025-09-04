@@ -200,8 +200,7 @@ export default function HomePage() {
 
 
   return (
-    <div className="min-h-screen w-full lg:grid lg:grid-cols-2 bg-background">
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-2xl space-y-8">
             <Card className="border-2 relative">
                 <CardHeader className="text-center">
@@ -371,17 +370,6 @@ export default function HomePage() {
                   </Button>
                 </CardFooter>
             </Card>
-        </div>
-      </div>
-       <div className="hidden lg:flex items-center justify-center bg-primary/5 p-10">
-            <Image 
-                src="https://picsum.photos/800/1000"
-                alt="Tax Calculation Illustration"
-                width={800}
-                height={1000}
-                className="rounded-2xl object-cover shadow-2xl"
-                data-ai-hint="financial planning tax"
-            />
         </div>
     </div>
   );
