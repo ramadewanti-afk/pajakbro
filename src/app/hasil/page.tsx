@@ -92,7 +92,7 @@ function HasilContent() {
         );
     }
 
-    const isApplicable = (value: string | undefined | null) => value && value !== "N/A";
+    const isApplicable = (value: string | undefined | null) => value && value !== "N/A" && value.trim() !== "";
 
     return (
          <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 print:bg-white">
