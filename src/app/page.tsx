@@ -13,9 +13,12 @@ import { taxRules } from "@/data/tax-rules";
 import { departments } from "@/data/departments";
 import { activities } from "@/data/activities";
 import { transactionTypes } from "@/data/transaction-types";
-import { Calculator, Coins, LogIn, History } from "lucide-react";
+import { Calculator, Coins, LogIn, History, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FileWarning } from "lucide-react";
+
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
 type AsnStatus = "ASN" | "NON ASN";
@@ -24,6 +27,14 @@ type FakturPajak = "Punya" | "Tidak Punya";
 type SertifikatKonstruksi = "Punya" | "Tidak Punya";
 
 const HISTORY_STORAGE_KEY = 'calculationHistory';
+
+type CalculationResult = {
+    id: number;
+    jenisTransaksi: string;
+    nilaiTransaksi: number;
+    totalPajak: number;
+    createdAt: string;
+};
 
 
 export default function HomePage() {
@@ -46,10 +57,17 @@ export default function HomePage() {
   const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState<SertifikatKonstruksi | "">("");
   
   const [error, setError] = useState<string>("");
+  const [history, setHistory] = useState<CalculationResult[]>([]);
 
   useEffect(() => {
     // Clear session storage on initial load to ensure a fresh start
     sessionStorage.removeItem('calculationResult');
+
+    // Load history from local storage
+    const storedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
+    if (storedHistory) {
+        setHistory(JSON.parse(storedHistory));
+    }
   }, []);
 
   const selectedTransaction = useMemo(() => {
@@ -167,9 +185,10 @@ export default function HomePage() {
     sessionStorage.setItem('calculationResult', JSON.stringify(resultData));
 
     // Save to local storage for history
-    const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
-    history.unshift(resultData); // Add to the beginning of the array
-    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history.slice(0, 50))); // Keep only the last 50 entries
+    const newHistory = [resultData, ...history];
+    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(newHistory.slice(0, 50))); // Keep only the last 50 entries
+    setHistory(newHistory.slice(0, 50));
+
 
     router.push('/hasil');
   };
@@ -197,20 +216,26 @@ export default function HomePage() {
       setSertifikatKonstruksi("");
       setError("");
   }
+  
+  const viewHistoryDetails = (item: CalculationResult) => {
+    sessionStorage.setItem('calculationResult', JSON.stringify(item));
+    router.push('/hasil');
+  };
+
+  const formatDate = (dateString: string) => {
+     return new Date(dateString).toLocaleString('id-ID', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    });
+  }
 
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-2xl space-y-8">
             <Card className="border-2 relative">
                 <CardHeader className="text-center">
                     <div className="absolute top-4 right-4 flex gap-2">
-                        <Link href="/riwayat" passHref>
-                            <Button variant="ghost" size="sm">
-                                <History className="mr-2 h-4 w-4" />
-                                Riwayat
-                            </Button>
-                        </Link>
                         <Link href="/login" passHref>
                             <Button variant="ghost" size="sm">
                                 <LogIn className="mr-2 h-4 w-4" />
@@ -370,7 +395,52 @@ export default function HomePage() {
                   </Button>
                 </CardFooter>
             </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <History className="h-6 w-6" />
+                        Riwayat Perhitungan Terakhir
+                    </CardTitle>
+                    <CardDescription>
+                        50 perhitungan terakhir yang Anda buat akan ditampilkan di sini.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {history.length > 0 ? (
+                        <ul className="space-y-2">
+                            {history.map((item) => (
+                                <li key={item.id}>
+                                    <button
+                                        onClick={() => viewHistoryDetails(item)}
+                                        className="w-full text-left p-3 rounded-md hover:bg-muted transition-colors border flex items-center justify-between"
+                                    >
+                                        <div>
+                                            <p className="font-semibold truncate">
+                                                <span className="font-mono text-primary mr-2">#{String(item.id).slice(-6)}</span>
+                                                {item.jenisTransaksi}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">{formatDate(item.createdAt)}</p>
+                                        </div>
+                                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                         <Alert className="bg-muted/50 border-dashed">
+                             <FileWarning className="h-4 w-4" />
+                            <AlertTitle>Riwayat Kosong</AlertTitle>
+                            <AlertDescription>
+                                Anda belum melakukan perhitungan apapun. Hasil perhitungan akan muncul di sini.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     </div>
   );
 }
+
+    
