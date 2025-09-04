@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { taxRules } from "@/data/tax-rules";
+import { taxRules, Transaction } from "@/data/tax-rules";
 import { departments } from "@/data/departments";
 import { activities } from "@/data/activities";
 import { transactionTypes } from "@/data/transaction-types";
@@ -180,37 +180,50 @@ export default function HomePage() {
     return bestMatch;
   };
   
-  const performCalculation = (nilai: number, rule: any) => {
+  const performCalculation = (nilai: number, rule: Transaction) => {
     let pph = 0;
     let dpp = nilai;
     let ppn = 0;
+    let pajakDaerah = 0;
 
     if (rule.kenaPPN) {
         const [numerator, denominator] = rule.dppRatio.split('/').map(Number);
-        dpp = denominator ? Math.round(nilai * (numerator / denominator)) : nilai;
-        ppn = nilai - dpp;
-    } else {
-        dpp = nilai;
-        ppn = 0;
+        if (denominator) {
+            dpp = Math.round(nilai * (numerator / denominator));
+            ppn = nilai - dpp;
+        }
     }
+    
+    // Special case for Makan Minum, it has its own tax but we also calculate PPh on it.
+    if (rule.jenisTransaksi === "Makan Minum") {
+        const [numerator, denominator] = rule.dppRatio.split('/').map(Number);
+        if (denominator) {
+            dpp = Math.round(nilai * (numerator / denominator));
+        }
+        pajakDaerah = dpp * 0.10;
+    }
+
 
     if (String(rule.tarifPajak).includes('%')) {
         const rate = parseFloat(String(rule.tarifPajak).replace('%', '')) / 100;
         pph = dpp * rate;
     }
 
+    // Special case for Tukang Harian
     if (rule.jenisTransaksi.includes('Tukang Harian')) {
         if (nilai > 450000 && nilai <= 2500000) {
             pph = (dpp - 450000) * 0.005; // Note: using DPP here may need review based on specific tax law
         } else if (nilai > 2500000) {
              const applicableRule = taxRules.find(r => r.jenisTransaksi.includes('Tukang Harian') && r.ptkp === ">2500000");
-             if(applicableRule) pph = dpp * (parseFloat(String(applicableRule.tarifPajak).replace('%','')) / 100);
+             if(applicableRule) {
+                const rate = parseFloat(String(applicableRule.tarifPajak).replace('%','')) / 100
+                pph = dpp * rate;
+             }
         } else {
             pph = 0;
         }
     }
     
-    const pajakDaerah = rule.jenisTransaksi === "Makan Minum" ? dpp * 0.10 : 0;
     const totalPajak = pph + ppn + pajakDaerah;
     const yangDibayarkan = nilai - totalPajak;
 
@@ -523,5 +536,7 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
 
     

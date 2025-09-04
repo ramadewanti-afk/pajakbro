@@ -452,7 +452,7 @@ export const taxRules: Transaction[] = [
     wp: "Badan Usaha",
     fakturPajak: "Punya",
     asn: "N/A",
-    golongan: "NA",
+    golongan: "N/A",
     sertifikatKonstruksi: "N/A",
     jenisPajak: "PPh 23",
     kodePajak: "411618-100",
@@ -583,3 +583,5 @@ export const taxRules: Transaction[] = [
     status: "Aktif",
   },
 ];
+
+    
