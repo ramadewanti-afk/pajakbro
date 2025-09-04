@@ -323,50 +323,59 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen w-full bg-background">
-        <div className="container mx-auto grid lg:grid-cols-2 gap-8 items-start min-h-screen p-4 sm:p-6 lg:p-8">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+        
+        <header className="text-center relative">
+            <div className="absolute top-0 right-0 flex gap-2">
+                <Link href="/login" passHref>
+                    <Button variant="ghost" size="sm">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Admin
+                    </Button>
+                </Link>
+            </div>
+            <div className="flex justify-center items-center gap-4 mb-2">
+                <Coins className="h-10 w-10 text-primary" />
+                <h1 className="text-4xl font-bold tracking-tight">
+                    Kalkulator Pajak Bro
+                </h1>
+            </div>
+          <p className="text-muted-foreground">
+            Hitung Pajak Penghasilan (PPh) dan PPN berdasarkan jenis transaksi dengan mudah dan akurat.
+          </p>
+        </header>
+        
+        <div className="p-3 bg-muted/50 rounded-lg overflow-hidden">
+            <div className="flex items-center gap-2 mb-2">
+               <Info className="h-5 w-5 text-primary"/>
+               <h3 className="font-semibold text-sm">Info Pajak</h3>
+            </div>
+             <div className="relative flex overflow-x-hidden text-xs text-muted-foreground">
+                <div className="animate-marquee whitespace-nowrap">
+                    <span className="mx-4">Pastikan semua data yang Anda masukkan sudah benar untuk hasil perhitungan yang akurat.</span>
+                    <span className="mx-4">Gunakan NPWP untuk mendapatkan tarif pajak yang lebih rendah pada beberapa jenis transaksi.</span>
+                    <span className="mx-4">Simpan bukti potong pajak Anda sebagai dokumentasi resmi.</span>
+                    <span className="mx-4">Batas waktu pelaporan SPT Tahunan adalah 31 Maret untuk Wajib Pajak Orang Pribadi.</span>
+                </div>
+                 <div className="absolute top-0 animate-marquee2 whitespace-nowrap">
+                    <span className="mx-4">Pastikan semua data yang Anda masukkan sudah benar untuk hasil perhitungan yang akurat.</span>
+                    <span className="mx-4">Gunakan NPWP untuk mendapatkan tarif pajak yang lebih rendah pada beberapa jenis transaksi.</span>
+                    <span className="mx-4">Simpan bukti potong pajak Anda sebagai dokumentasi resmi.</span>
+                    <span className="mx-4">Batas waktu pelaporan SPT Tahunan adalah 31 Maret untuk Wajib Pajak Orang Pribadi.</span>
+                </div>
+            </div>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="w-full space-y-8 lg:sticky lg:top-8">
                 <Card className="border-2 relative">
-                    <CardHeader className="text-center">
-                        <div className="absolute top-4 right-4 flex gap-2">
-                            <Link href="/login" passHref>
-                                <Button variant="ghost" size="sm">
-                                    <LogIn className="mr-2 h-4 w-4" />
-                                    Admin
-                                </Button>
-                            </Link>
-                        </div>
-                        <div className="flex justify-center items-center gap-4 mb-2 pt-8">
-                            <Coins className="h-10 w-10 text-primary" />
-                            <CardTitle className="text-4xl font-bold tracking-tight">
-                                Kalkulator Pajak Bro
-                            </CardTitle>
-                        </div>
-                      <CardDescription>
-                        Hitung Pajak Penghasilan (PPh) dan PPN berdasarkan jenis transaksi dengan mudah dan akurat.
-                      </CardDescription>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Calculator className="h-6 w-6" />
+                          Formulir Perhitungan
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      <div className="p-3 bg-muted/50 rounded-lg overflow-hidden">
-                        <div className="flex items-center gap-2 mb-2">
-                           <Info className="h-5 w-5 text-primary"/>
-                           <h3 className="font-semibold text-sm">Info Pajak</h3>
-                        </div>
-                         <div className="relative flex overflow-x-hidden text-xs text-muted-foreground">
-                            <div className="animate-marquee whitespace-nowrap">
-                                <span className="mx-4">Pastikan semua data yang Anda masukkan sudah benar untuk hasil perhitungan yang akurat.</span>
-                                <span className="mx-4">Gunakan NPWP untuk mendapatkan tarif pajak yang lebih rendah pada beberapa jenis transaksi.</span>
-                                <span className="mx-4">Simpan bukti potong pajak Anda sebagai dokumentasi resmi.</span>
-                                <span className="mx-4">Batas waktu pelaporan SPT Tahunan adalah 31 Maret untuk Wajib Pajak Orang Pribadi.</span>
-                            </div>
-                             <div className="absolute top-0 animate-marquee2 whitespace-nowrap">
-                                <span className="mx-4">Pastikan semua data yang Anda masukkan sudah benar untuk hasil perhitungan yang akurat.</span>
-                                <span className="mx-4">Gunakan NPWP untuk mendapatkan tarif pajak yang lebih rendah pada beberapa jenis transaksi.</span>
-                                <span className="mx-4">Simpan bukti potong pajak Anda sebagai dokumentasi resmi.</span>
-                                <span className="mx-4">Batas waktu pelaporan SPT Tahunan adalah 31 Maret untuk Wajib Pajak Orang Pribadi.</span>
-                            </div>
-                        </div>
-                      </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="nilai-transaksi">Nilai Transaksi (dalam Rupiah)</Label>
                         <Input
@@ -568,6 +577,7 @@ export default function HomePage() {
                 </Card>
             </div>
         </div>
+      </div>
     </div>
   );
 }
