@@ -181,15 +181,7 @@ const RuleFormDialog = ({
                     </div>
                     <div className="space-y-1.5">
                         <Label>Kode Pajak PPh</Label>
-                         <Select value={formData.kodePajak} onValueChange={(v) => handleChange('kodePajak', v)}>
-                            <SelectTrigger><SelectValue placeholder="Pilih Kode Pajak PPh" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="411121-100">411121-100 (PPh 21)</SelectItem>
-                                <SelectItem value="411122-100">411122-100 (PPh 22)</SelectItem>
-                                <SelectItem value="411124-100">411124-100 (PPh 23)</SelectItem>
-                                <SelectItem value="411128-409">411128-409 (Pasal 4(2) Konstruksi)</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Input value={formData.kodePajak} onChange={(e) => handleChange('kodePajak', e.target.value)} placeholder="Contoh: 411121-100" />
                     </div>
                     <div className="space-y-1.5">
                         <Label>DPP Rasio</Label>
@@ -211,13 +203,7 @@ const RuleFormDialog = ({
                     </div>
                      <div className="space-y-1.5">
                         <Label>Kode Pajak PPN</Label>
-                        <Select value={formData.kodeKapPpn} onValueChange={(v) => handleChange('kodeKapPpn', v)}>
-                            <SelectTrigger><SelectValue placeholder="Pilih Kode Pajak PPN" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="-">- (Tidak ada PPN)</SelectItem>
-                                <SelectItem value="411211-100">411211-100 (PPN Dalam Negeri)</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Input value={formData.kodeKapPpn} onChange={(e) => handleChange('kodeKapPpn', e.target.value)} placeholder="Contoh: 411211-100 atau -" />
                     </div>
                 </div>
             </div>
@@ -391,3 +377,5 @@ export default function AturanPajakPage() {
     </>
   );
 }
+
+    
