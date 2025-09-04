@@ -14,9 +14,10 @@ import { departments } from "@/data/departments";
 import { activities } from "@/data/activities";
 import { transactionTypes } from "@/data/transaction-types";
 import { calculationHistory, CalculationResult } from "@/data/history";
-import { Calculator, Coins, LogIn, History, ArrowRight, Search, FileWarning, MoreHorizontal } from "lucide-react";
+import { Calculator, Coins, LogIn, History, ArrowRight, Search, FileWarning, MoreHorizontal, FileText, Trash2, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
 type AsnStatus = "ASN" | "NON ASN";
@@ -25,6 +26,63 @@ type FakturPajak = "Punya" | "Tidak Punya";
 type SertifikatKonstruksi = "Punya" | "Tidak Punya";
 
 const ITEMS_PER_PAGE = 10;
+
+// Function to format currency
+const formatCurrency = (value: number) => {
+    if (typeof value !== 'number') return 'Rp 0';
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
+}
+
+// Result display component
+const CalculationResultDisplay = ({ result, onSave }: { result: CalculationResult | null, onSave: () => void }) => {
+    if (!result) return null;
+
+    return (
+        <Card className="mt-6 bg-muted/50 border-dashed">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                    <CheckCircle className="h-6 w-6" />
+                    Hasil Perhitungan Pajak
+                </CardTitle>
+                <CardDescription>Berikut adalah rincian pajak berdasarkan data yang Anda masukkan.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                    <p className="text-muted-foreground">Jenis Pajak</p>
+                    <p className="font-semibold text-right">{result.jenisPajak} ({result.tarifPajak})</p>
+                    
+                    <p className="text-muted-foreground">Dasar Pengenaan Pajak (DPP)</p>
+                    <p className="font-mono text-right">{formatCurrency(result.nilaiDpp)}</p>
+
+                    <p className="text-muted-foreground">Potongan PPh</p>
+                    <p className="font-mono text-right">{formatCurrency(result.pajakPph)}</p>
+
+                    {result.ppn > 0 && (
+                        <>
+                            <p className="text-muted-foreground">PPN (11%)</p>
+                            <p className="font-mono text-right">{formatCurrency(result.ppn)}</p>
+                        </>
+                    )}
+                 </div>
+                 <Separator />
+                 <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                    <p className="font-bold text-lg">Total Pajak</p>
+                    <p className="font-bold text-lg font-mono text-right">{formatCurrency(result.totalPajak)}</p>
+                    
+                    <p className="text-muted-foreground">Nilai Dibayarkan ke Vendor</p>
+                    <p className="font-mono text-right">{formatCurrency(result.yangDibayarkan)}</p>
+                 </div>
+            </CardContent>
+            <CardFooter className="flex justify-end">
+                <Button onClick={onSave}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Simpan & Lihat Rincian Lengkap
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+};
+
 
 export default function HomePage() {
   const router = useRouter();
@@ -45,27 +103,22 @@ export default function HomePage() {
   const [asnGolongan, setAsnGolongan] = useState<AsnGolongan | "">("");
   const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState<SertifikatKonstruksi | "">("");
   
+  // Calculation and history state
   const [error, setError] = useState<string>("");
+  const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
   const [history, setHistory] = useState<CalculationResult[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [visibleHistoryCount, setVisibleHistoryCount] = useState<number>(ITEMS_PER_PAGE);
 
   useEffect(() => {
-    // Clear session storage on initial load to ensure a fresh start
     sessionStorage.removeItem('calculationResult');
-
-    // Load history from central data source
-    // In a real app, this would be an API call.
-    // For prototype, we filter only active items for the user view.
     setHistory(calculationHistory.filter(item => item.status === 'Aktif').sort((a, b) => b.id - a.id));
   }, []);
   
   const filteredHistory = useMemo(() => {
-    if (!searchTerm) {
-        return history;
-    }
+    if (!searchTerm) return history;
     return history.filter(item => 
-        String(item.id).slice(-6).includes(searchTerm.toLowerCase())
+        String(item.id).slice(-6).toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [history, searchTerm]);
   
@@ -74,107 +127,85 @@ export default function HomePage() {
       setVisibleHistoryCount(ITEMS_PER_PAGE); // Reset pagination on new search
   }
 
-  const selectedTransaction = useMemo(() => {
-    return taxRules.find(rule => rule.jenisTransaksi === jenisTransaksi && rule.wp === wp);
-  }, [jenisTransaksi, wp]);
-  
-  // Filter available transaction types based on selected WP
-  const availableTransactions = useMemo(() => {
-      const activeRuleTransactions = new Set(taxRules.filter(r => r.wp === wp && r.status === 'Aktif').map(r => r.jenisTransaksi));
-      return transactionTypes.filter(t => activeRuleTransactions.has(t.name));
-  }, [wp]);
-
-
-  const handleCalculate = () => {
+  // Effect to trigger automatic calculation
+  useEffect(() => {
     const nilai = parseFloat(nilaiTransaksi);
-    if (isNaN(nilai) || nilai <= 0) {
-      setError("Masukkan nilai transaksi yang valid.");
+    if (isNaN(nilai) || nilai <= 0 || !jenisTransaksi) {
+      setCalculationResult(null);
+      setError("");
       return;
     }
 
-    let rule = selectedTransaction;
-
-    // Additional filtering for complex rules
-    if (selectedTransaction?.jenisTransaksi === "Honor (Narsum, Juri, dll)" && wp === "Orang Pribadi") {
-        const honorRule = taxRules.find(r => 
-            r.jenisTransaksi === jenisTransaksi &&
-            r.wp === wp &&
-            r.asn === asnStatus &&
-            (r.golongan === asnGolongan || r.golongan === "N/A") &&
-            r.status === 'Aktif'
-        );
-        rule = honorRule;
-    } else if (selectedTransaction?.jenisTransaksi.includes("Jasa Konsultasi Konstruksi")) {
-        const konstruksiRule = taxRules.find(r => 
-            r.jenisTransaksi === jenisTransaksi &&
-            r.wp === wp &&
-            r.sertifikatKonstruksi === sertifikatKonstruksi &&
-            r.status === 'Aktif'
-        );
-        rule = konstruksiRule;
-    } else if (selectedTransaction?.jenisPajak === "PPh 23" && wp === "Badan Usaha") {
-         const pph23Rule = taxRules.find(r => 
-            r.jenisTransaksi === jenisTransaksi &&
-            r.wp === wp &&
-            r.fakturPajak === fakturPajak &&
-            r.status === 'Aktif'
-        );
-        rule = pph23Rule;
-    }
-
+    let rule = findMatchingRule();
 
     if (!rule || rule.status === 'Tidak Aktif') {
       setError("Kombinasi yang Anda pilih tidak memiliki aturan pajak yang aktif atau sesuai.");
+      setCalculationResult(null);
       return;
     }
 
     setError("");
+    performCalculation(nilai, rule);
+  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
 
+
+  const findMatchingRule = () => {
+    // This logic needs to be robust to find the most specific rule.
+    const allRules = taxRules.filter(r => r.jenisTransaksi === jenisTransaksi && r.wp === wp && r.status === 'Aktif');
+
+    let bestMatch = allRules.find(r => 
+        r.fakturPajak === "N/A" && 
+        r.asn === "N/A" && 
+        r.sertifikatKonstruksi === "N/A"
+    );
+
+    // More specific matches override the base one
+    for (const rule of allRules) {
+        let isMatch = true;
+        if (rule.fakturPajak !== "N/A" && rule.fakturPajak !== fakturPajak) isMatch = false;
+        if (rule.asn !== "N/A" && rule.asn !== asnStatus) isMatch = false;
+        if (rule.golongan !== "N/A" && asnStatus === "ASN" && rule.golongan !== asnGolongan) isMatch = false;
+        if (rule.sertifikatKonstruksi !== "N/A" && rule.sertifikatKonstruksi !== sertifikatKonstruksi) isMatch = false;
+
+        if (isMatch) {
+            bestMatch = rule;
+        }
+    }
+    return bestMatch;
+  };
+  
+  const performCalculation = (nilai: number, rule: any) => {
     let pph = 0;
     let dpp = nilai;
     let ppn = 0;
 
-    // PPN calculation is done first, as it might affect the DPP for PPh
     if (rule.kenaPPN) {
-        // Use dppRatio to calculate DPP from gross value
         const [numerator, denominator] = rule.dppRatio.split('/').map(Number);
-        if(denominator) {
-            dpp = nilai * (numerator / denominator);
-            ppn = dpp * 0.11; // PPN is 11% of DPP
-        } else {
-            dpp = nilai; // fallback
-        }
+        dpp = denominator ? nilai * (numerator / denominator) : nilai;
+        ppn = dpp * 0.11;
     }
 
-    // Simple percentage calculation for PPh
     if (String(rule.tarifPajak).includes('%')) {
         const rate = parseFloat(String(rule.tarifPajak).replace('%', '')) / 100;
         pph = dpp * rate;
     }
 
-    // Special case for 'Tukang Harian' based on gross value (nilai transaksi)
-    // This logic needs to be precise and based on the PTKP ranges
     if (rule.jenisTransaksi.includes('Tukang Harian')) {
         if (nilai > 450000 && nilai <= 2500000) {
-            pph = (nilai - 450000) * 0.005; // 0.5% on the excess of 450,000
+            pph = (nilai - 450000) * 0.005;
         } else if (nilai > 2500000) {
              const applicableRule = taxRules.find(r => r.jenisTransaksi.includes('Tukang Harian') && r.ptkp === ">2500000");
-             if(applicableRule) {
-                 const rate = parseFloat(String(applicableRule.tarifPajak).replace('%','')) / 100;
-                 pph = nilai * rate;
-             }
+             if(applicableRule) pph = nilai * (parseFloat(String(applicableRule.tarifPajak).replace('%','')) / 100);
         } else {
             pph = 0;
         }
     }
     
-    // Pajak Daerah (assuming it is 10% from DPP if it's makan minum)
     const pajakDaerah = rule.jenisTransaksi === "Makan Minum" ? dpp * 0.10 : 0;
-
     const totalPajak = pph + ppn;
-    const yangDibayarkan = nilai - pph; // In many cases, yang dibayarkan is Nilai Transaksi - PPh
+    const yangDibayarkan = nilai - pph;
 
-    const resultData: CalculationResult = {
+    const result: CalculationResult = {
       id: Date.now(),
       namaBidang: selectedBidang || "-",
       subKegiatan: selectedKegiatan || "-",
@@ -193,22 +224,29 @@ export default function HomePage() {
       pajakDaerah: pajakDaerah,
       tarifPpn: rule.kenaPPN ? "11%" : "0%",
       ppn: ppn,
-      kodeKapPpn: rule.kenaPPN ? "411211-100" : "-", // Example KODE PPN
+      kodeKapPpn: rule.kenaPPN ? "411211-100" : "-",
       totalPajak: totalPajak,
       yangDibayarkan: yangDibayarkan,
       createdAt: new Date().toISOString(),
       status: 'Aktif',
     };
     
-    // Save to session storage for immediate viewing
-    sessionStorage.setItem('calculationResult', JSON.stringify(resultData));
+    setCalculationResult(result);
+  }
 
-    // Save to central "database"
-    calculationHistory.unshift(resultData);
-    setHistory([resultData, ...history]);
-
+  const handleSaveAndShowDetails = () => {
+    if (!calculationResult) return;
+    
+    sessionStorage.setItem('calculationResult', JSON.stringify(calculationResult));
+    calculationHistory.unshift(calculationResult);
+    setHistory([calculationResult, ...history]);
     router.push('/hasil');
   };
+
+  const availableTransactions = useMemo(() => {
+      const activeRuleTransactions = new Set(taxRules.filter(r => r.wp === wp && r.status === 'Aktif').map(r => r.jenisTransaksi));
+      return transactionTypes.filter(t => activeRuleTransactions.has(t.name));
+  }, [wp]);
   
   const resetDynamicFields = () => {
       setFakturPajak("");
@@ -217,6 +255,7 @@ export default function HomePage() {
       setSertifikatKonstruksi("");
       setError("");
       setJenisTransaksi("");
+      setCalculationResult(null);
   }
 
   const handleWpChange = (value: string) => {
@@ -226,26 +265,24 @@ export default function HomePage() {
 
   const handleTransactionChange = (value: string) => {
       setJenisTransaksi(value);
-      // Reset only fields that might change with transaction type
       setFakturPajak("");
       setAsnStatus("");
       setAsnGolongan("");
       setSertifikatKonstruksi("");
       setError("");
+      setCalculationResult(null);
   }
   
   const viewHistoryDetails = (item: CalculationResult) => {
-    // Re-stringify the specific history item to be viewed
     sessionStorage.setItem('calculationResult', JSON.stringify(item));
     router.push('/hasil');
   };
 
   const formatDate = (dateString: string) => {
-     return new Date(dateString).toLocaleString('id-ID', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    });
+     return new Date(dateString).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
   }
+
+  const currentRule = useMemo(findMatchingRule, [jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
 
 
   return (
@@ -339,9 +376,9 @@ export default function HomePage() {
                           </div>
                        </div>
                       
-                      {selectedTransaction && (
+                      {currentRule && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-muted/50">
-                          {selectedTransaction.fakturPajak !== "N/A" && (
+                          {currentRule.fakturPajak !== "N/A" && (
                             <div className="space-y-2">
                               <Label>Punya Faktur Pajak?</Label>
                               <RadioGroup value={fakturPajak} onValueChange={(v) => setFakturPajak(v as FakturPajak)} className="flex space-x-4 pt-2">
@@ -356,7 +393,7 @@ export default function HomePage() {
                               </RadioGroup>
                             </div>
                           )}
-                           {selectedTransaction.asn !== "N/A" && (
+                           {currentRule.asn !== "N/A" && (
                             <div className="space-y-2">
                                 <Label>Status Kepegawaian</Label>
                                 <Select value={asnStatus} onValueChange={(v) => setAsnStatus(v as AsnStatus)}>
@@ -368,7 +405,7 @@ export default function HomePage() {
                                 </Select>
                             </div>
                           )}
-                          {asnStatus === "ASN" && selectedTransaction.golongan !== "N/A" && (
+                          {asnStatus === "ASN" && currentRule.golongan !== "N/A" && (
                              <div className="space-y-2">
                                 <Label>Golongan ASN</Label>
                                 <Select value={asnGolongan} onValueChange={(v) => setAsnGolongan(v as AsnGolongan)}>
@@ -382,7 +419,7 @@ export default function HomePage() {
                                 </Select>
                             </div>
                           )}
-                          {selectedTransaction.sertifikatKonstruksi !== "N/A" && (
+                          {currentRule.sertifikatKonstruksi !== "N/A" && (
                             <div className="space-y-2">
                               <Label>Punya Sertifikat Konstruksi?</Label>
                               <RadioGroup value={sertifikatKonstruksi} onValueChange={(v) => setSertifikatKonstruksi(v as SertifikatKonstruksi)} className="flex space-x-4 pt-2">
@@ -406,13 +443,9 @@ export default function HomePage() {
                         </div>
                       )}
                       
+                      <CalculationResultDisplay result={calculationResult} onSave={handleSaveAndShowDetails} />
+
                     </CardContent>
-                    <CardFooter>
-                      <Button onClick={handleCalculate} className="w-full text-lg py-6" size="lg" disabled={!jenisTransaksi || !nilaiTransaksi}>
-                        <Calculator className="mr-2 h-5 w-5" />
-                        Hitung Pajak
-                      </Button>
-                    </CardFooter>
                 </Card>
             </div>
             <div className="w-full space-y-8 lg:sticky lg:top-8">
@@ -481,3 +514,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
