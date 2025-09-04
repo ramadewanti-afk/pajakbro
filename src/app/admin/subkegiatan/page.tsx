@@ -165,14 +165,21 @@ export default function SubKegiatanPage() {
       setIsDialogOpen(true);
   }
 
-  const handleSaveRule = (ruleToSave: Transaction) => {
+  const handleSaveRule = (ruleToSave: Partial<Transaction>) => {
     if (editingRule) {
-        // Find original index to replace
+        // This is a simplified update. For a real app, you'd likely want a unique ID per rule.
         const originalIndex = rules.findIndex(r => r.jenisTransaksi === editingRule.jenisTransaksi && r.wp === editingRule.wp && r.asn === editingRule.asn && r.golongan === editingRule.golongan && r.fakturPajak === editingRule.fakturPajak && r.sertifikatKonstruksi === editingRule.sertifikatKonstruksi);
-        
-        setRules(currentRules => currentRules.map((r, index) => index === originalIndex ? ruleToSave : r));
+
+        if (originalIndex !== -1) {
+            setRules(currentRules => {
+                const updatedRules = [...currentRules];
+                updatedRules[originalIndex] = { ...currentRules[originalIndex], ...ruleToSave } as Transaction;
+                return updatedRules;
+            });
+        }
     } else {
-        setRules(currentRules => [...currentRules, ruleToSave]);
+        // Add new rule
+        setRules(currentRules => [...currentRules, ruleToSave as Transaction]);
     }
   };
 
