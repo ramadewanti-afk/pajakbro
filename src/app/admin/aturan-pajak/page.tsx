@@ -104,53 +104,7 @@ const RuleFormDialog = ({
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="space-y-1.5">
-                        <Label>dan Faktur Pajak...</Label>
-                        <Select value={formData.fakturPajak} onValueChange={(v) => handleChange('fakturPajak', v)}>
-                            <SelectTrigger><SelectValue placeholder="Pilih Opsi Faktur" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="N/A">Tidak Ada</SelectItem>
-                                <SelectItem value="Punya">Punya</SelectItem>
-                                <SelectItem value="Tidak Punya">Tidak Punya</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label>dan Statusnya...</Label>
-                        <Select value={formData.asn} onValueChange={(v) => handleChange('asn', v)}>
-                            <SelectTrigger><SelectValue placeholder="Pilih Status ASN" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="N/A">Tidak Ada</SelectItem>
-                                <SelectItem value="ASN">ASN</SelectItem>
-                                <SelectItem value="NON ASN">NON ASN</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label>dan Golongannya...</Label>
-                        <Select value={formData.golongan} onValueChange={(v) => handleChange('golongan', v)}>
-                            <SelectTrigger><SelectValue placeholder="Pilih Golongan" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="N/A">Tidak Ada</SelectItem>
-                                <SelectItem value="I">I</SelectItem>
-                                <SelectItem value="II">II</SelectItem>
-                                <SelectItem value="III">III</SelectItem>
-                                <SelectItem value="IV">IV</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-1.5">
-                        <Label>dan Sertifikat Konstruksi...</Label>
-                        <Select value={formData.sertifikatKonstruksi} onValueChange={(v) => handleChange('sertifikatKonstruksi', v)}>
-                            <SelectTrigger><SelectValue placeholder="Pilih Opsi Sertifikat" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="N/A">Tidak Ada</SelectItem>
-                                <SelectItem value="Punya">Punya</SelectItem>
-                                <SelectItem value="Tidak Punya">Tidak Punya</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5 col-span-full">
+                     <div className="space-y-1.5 col-span-full">
                         <Label>dan Nilai Transaksi (PTKP)...</Label>
                         <Input
                             value={formData.ptkp || ''}
@@ -377,5 +331,7 @@ export default function AturanPajakPage() {
     </>
   );
 }
+
+    
 
     
