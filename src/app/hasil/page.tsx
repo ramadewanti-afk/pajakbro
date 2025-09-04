@@ -77,8 +77,12 @@ function HasilContent() {
     }, [router, searchParams]);
 
     const formatCurrency = (value: number) => {
-        if (typeof value !== 'number') return '0';
-        return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value);
+        if (typeof value !== 'number') return 'Rp 0';
+        return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value);
+    }
+    
+    const handlePrint = () => {
+        window.print();
     }
 
     if (loading || !data) {
@@ -177,16 +181,16 @@ function HasilContent() {
                             <TableBody>
                                 <TableRow>
                                     <TableCell className="w-1/3">Nilai Transaksi</TableCell>
-                                    <TableCell className="w-2/3">: Rp {formatCurrency(data.nilaiTransaksi)}</TableCell>
+                                    <TableCell className="w-2/3">: {formatCurrency(data.nilaiTransaksi)}</TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>Nilai DPP</TableCell>
-                                    <TableCell>: Rp {formatCurrency(data.nilaiDpp)}</TableCell>
+                                    <TableCell>: {formatCurrency(data.nilaiDpp)}</TableCell>
                                 </TableRow>
                                 {data.pajakDaerah > 0 && (
                                     <TableRow>
                                         <TableCell>Pajak daerah Makan Minum (10%)</TableCell>
-                                        <TableCell>: Rp {formatCurrency(data.pajakDaerah)}</TableCell>
+                                        <TableCell>: {formatCurrency(data.pajakDaerah)}</TableCell>
                                     </TableRow>
                                 )}
                                 <TableRow>
@@ -195,7 +199,7 @@ function HasilContent() {
                                 </TableRow>
                                 <TableRow className="bg-blue-50 font-medium">
                                     <TableCell>PPN</TableCell>
-                                    <TableCell>: Rp {formatCurrency(data.ppn)}</TableCell>
+                                    <TableCell>: {formatCurrency(data.ppn)}</TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>Kode KAP E-Billing PPN</TableCell>
@@ -211,7 +215,7 @@ function HasilContent() {
                                 </TableRow>
                                 <TableRow className="bg-blue-50 font-medium">
                                     <TableCell>Pajak PPh</TableCell>
-                                    <TableCell>: Rp {formatCurrency(data.pajakPph)}</TableCell>                            
+                                    <TableCell>: {formatCurrency(data.pajakPph)}</TableCell>                            
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>Kode KAP E-Billing PPh</TableCell>
@@ -219,11 +223,11 @@ function HasilContent() {
                                 </TableRow>
                                 <TableRow className="bg-primary/10 font-bold text-lg text-primary">
                                     <TableCell>Total Pajak</TableCell>
-                                    <TableCell>: Rp {formatCurrency(data.totalPajak)}</TableCell>
+                                    <TableCell>: {formatCurrency(data.totalPajak)}</TableCell>
                                 </TableRow>
                                 <TableRow className="bg-primary/10 font-bold text-lg text-primary">
                                     <TableCell>Yang dibayarkan</TableCell>
-                                    <TableCell>: Rp {formatCurrency(data.yangDibayarkan)}</TableCell>
+                                    <TableCell>: {formatCurrency(data.yangDibayarkan)}</TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>
@@ -242,7 +246,7 @@ function HasilContent() {
                     <Button variant="outline" onClick={() => router.push('/')}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
                     </Button>
-                    <Button onClick={() => window.print()}>
+                    <Button onClick={handlePrint}>
                         <FileDown className="mr-2 h-4 w-4" /> Simpan sebagai PDF
                     </Button>
                 </CardFooter>
