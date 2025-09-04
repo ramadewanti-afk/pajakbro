@@ -7,6 +7,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContaine
 import { taxRules as initialTaxRules } from "@/data/tax-rules";
 import { departments as initialDepartments } from "@/data/departments";
 import { activities as initialActivities } from "@/data/activities";
+import { calculationHistory as initialHistory } from "@/data/history";
 import { Briefcase, ClipboardList, ListTree, ShieldCheck, TrendingUp } from "lucide-react";
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
@@ -23,6 +24,7 @@ export default function AdminPage() {
     const [taxRules] = useLocalStorage("taxRules", initialTaxRules);
     const [departments] = useLocalStorage("departments", initialDepartments);
     const [activities] = useLocalStorage("activities", initialActivities);
+    const [history] = useLocalStorage("calculationHistory", initialHistory);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -30,17 +32,21 @@ export default function AdminPage() {
     }, []);
 
     const popularTransactions = useMemo(() => {
-        if (!mounted) return [];
-        // In a real app, this data would come from a database.
-        // For now, we'll simulate it by assigning random counts to unique transaction types.
-        const uniqueTransactions = [...new Set(taxRules.map(rule => rule.jenisTransaksi))];
-        const popular = uniqueTransactions.map(name => ({
-            name: name,
-            total: Math.floor(Math.random() * 100) + 10, // Random count between 10 and 110
-        })).sort((a, b) => b.total - a.total);
+        if (!mounted || history.length === 0) return [];
         
-        return popular.slice(0, 5); // Return top 5
-    }, [taxRules, mounted]);
+        // Count occurrences of each transaction type from actual history
+        const transactionCounts = history.reduce((acc, curr) => {
+            acc[curr.jenisTransaksi] = (acc[curr.jenisTransaksi] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        // Convert to array, sort, and get the top 5
+        const sortedTransactions = Object.entries(transactionCounts)
+            .map(([name, total]) => ({ name, total }))
+            .sort((a, b) => b.total - a.total);
+            
+        return sortedTransactions.slice(0, 5);
+    }, [history, mounted]);
     
     if (!mounted) {
         return null; // or a loading skeleton
@@ -96,41 +102,48 @@ export default function AdminPage() {
                         Transaksi Terpopuler
                     </CardTitle>
                     <CardDescription>
-                        5 jenis transaksi yang paling sering digunakan (data simulasi).
+                       5 jenis transaksi yang paling sering digunakan berdasarkan riwayat perhitungan.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="pl-2">
-                    <ResponsiveContainer width="100%" height={350}>
-                        <BarChart data={popularTransactions}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                                dataKey="name" 
-                                stroke="#888888"
-                                fontSize={12} 
-                                tickLine={false}
-                                axisLine={false}
-                                angle={-45}
-                                textAnchor="end"
-                                interval={0}
-                                height={80}
-                             />
-                            <YAxis 
-                                stroke="#888888"
-                                fontSize={12}
-                                tickLine={false}
-                                axisLine={false}
-                                tickFormatter={(value) => `${value}`}
-                             />
-                            <Tooltip 
-                                 contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)' }}
-                            />
-                            <Bar dataKey="total" radius={[4, 4, 0, 0]}>
-                                {popularTransactions.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
+                   {popularTransactions.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={350}>
+                            <BarChart data={popularTransactions}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis 
+                                    dataKey="name" 
+                                    stroke="#888888"
+                                    fontSize={12} 
+                                    tickLine={false}
+                                    axisLine={false}
+                                    angle={-45}
+                                    textAnchor="end"
+                                    interval={0}
+                                    height={80}
+                                />
+                                <YAxis 
+                                    stroke="#888888"
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(value) => `${value}`}
+                                    allowDecimals={false}
+                                />
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)' }}
+                                />
+                                <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+                                    {popularTransactions.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                   ) : (
+                        <div className="flex items-center justify-center h-[350px] text-muted-foreground">
+                            Belum ada data riwayat untuk ditampilkan.
+                        </div>
+                   )}
                 </CardContent>
             </Card>
         </div>
