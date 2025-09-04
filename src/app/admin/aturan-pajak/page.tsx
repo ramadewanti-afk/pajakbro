@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { MoreHorizontal, PlusCircle, Pencil, ToggleLeft, ToggleRight } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Pencil, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import React from 'react';
 
 // Form Dialog Component
@@ -170,6 +170,10 @@ export default function AturanPajakPage() {
       setIsDialogOpen(true);
   }
 
+  const handleDelete = (indexToDelete: number) => {
+      setRules(currentRules => currentRules.filter((_, index) => index !== indexToDelete));
+  }
+
   const handleSaveRule = (ruleToSave: Partial<Transaction>) => {
     if (editingRule) {
         // This is a simplified update. For a real app, you'd likely want a unique ID per rule.
@@ -184,7 +188,9 @@ export default function AturanPajakPage() {
         }
     } else {
         // Add new rule
-        setRules(currentRules => [...currentRules, ruleToSave as Transaction]);
+        // In a real app, you would add a unique ID here
+        const newRule = { ...ruleToSave, id: Date.now() } as Transaction;
+        setRules(currentRules => [...currentRules, newRule]);
     }
   };
 
@@ -257,6 +263,10 @@ export default function AturanPajakPage() {
                                               <span>Aktifkan</span>
                                           </>
                                       )}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleDelete(index)} className="text-red-600">
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      <span>Hapus</span>
                                   </DropdownMenuItem>
                               </DropdownMenuContent>
                           </DropdownMenu>
