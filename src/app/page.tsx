@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { taxRules } from "@/data/tax-rules";
+import { departments } from "@/data/departments";
+import { activities } from "@/data/activities";
 import { Calculator, Coins, LogIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,9 +24,16 @@ type SertifikatKonstruksi = "Punya" | "Tidak Punya";
 
 export default function HomePage() {
   const router = useRouter();
+  
+  // Master Data State
   const [jenisTransaksi, setJenisTransaksi] = useState<string>("");
   const [wp, setWp] = useState<WpType>("Orang Pribadi");
   const [nilaiTransaksi, setNilaiTransaksi] = useState<string>("");
+  
+  // Optional Data State
+  const [selectedBidang, setSelectedBidang] = useState<string>("");
+  const [selectedKegiatan, setSelectedKegiatan] = useState<string>("");
+
 
   // Dynamic fields
   const [fakturPajak, setFakturPajak] = useState<FakturPajak | "">("");
@@ -32,8 +41,12 @@ export default function HomePage() {
   const [asnGolongan, setAsnGolongan] = useState<AsnGolongan | "">("");
   const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState<SertifikatKonstruksi | "">("");
   
-  const [pajak, setPajak] = useState<{ pph: number; ppn: number; jenisPajak: string, tarif: string } | null>(null);
   const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    // Clear session storage on initial load to ensure a fresh start
+    sessionStorage.removeItem('calculationResult');
+  }, []);
 
   const selectedTransaction = useMemo(() => {
     return taxRules.find(rule => rule.jenisTransaksi === jenisTransaksi && rule.wp === wp);
@@ -48,7 +61,6 @@ export default function HomePage() {
     const nilai = parseFloat(nilaiTransaksi);
     if (isNaN(nilai) || nilai <= 0) {
       setError("Masukkan nilai transaksi yang valid.");
-      setPajak(null);
       return;
     }
 
@@ -82,21 +94,28 @@ export default function HomePage() {
 
     if (!rule) {
       setError("Kombinasi yang Anda pilih tidak memiliki aturan pajak yang sesuai.");
-      setPajak(null);
       return;
     }
 
     setError("");
 
     let pph = 0;
-    
-    // Simple percentage calculation
-    if (String(rule.tarifPajak).includes('%')) {
-        const rate = parseFloat(String(rule.tarifPajak).replace('%', '')) / 100;
-        pph = nilai * rate;
+    let dpp = nilai;
+    let ppn = 0;
+
+    // PPN calculation is done first, as it might affect the DPP for PPh
+    if (rule.kenaPPN) {
+        dpp = nilai / 1.11;
+        ppn = dpp * 0.11;
     }
 
-    // Special case for 'Tukang Harian'
+    // Simple percentage calculation for PPh
+    if (String(rule.tarifPajak).includes('%')) {
+        const rate = parseFloat(String(rule.tarifPajak).replace('%', '')) / 100;
+        pph = dpp * rate;
+    }
+
+    // Special case for 'Tukang Harian' based on gross value (nilai transaksi)
     if (rule.jenisTransaksi.includes('Tukang Harian')) {
         if (nilai > 450000 && nilai <= 2500000) {
             pph = (nilai - 450000) * 0.005; // 0.5%
@@ -106,17 +125,39 @@ export default function HomePage() {
             pph = 0;
         }
     }
+    
+    // Pajak Daerah (assuming it is 10% from DPP if it's makan minum)
+    const pajakDaerah = rule.jenisTransaksi === "Makan Minum" ? dpp * 0.10 : 0;
 
-    const ppn = rule.kenaPPN ? nilai * 0.11 : 0; // PPN is 11%
+    const totalPajak = pph + ppn;
+    const yangDibayarkan = nilai - pph; // In many cases, yang dibayarkan is Nilai Transaksi - PPh
 
-    setPajak({
-      pph,
-      ppn,
+    const resultData = {
+      id: Date.now(),
+      namaBidang: selectedBidang || "-",
+      subKegiatan: selectedKegiatan || "-",
+      jenisTransaksi,
+      wajibPajak: wp,
+      fakturPajak: fakturPajak || rule.fakturPajak,
+      asn: asnStatus || rule.asn,
+      golongan: asnGolongan || rule.golongan,
+      sertifikatKonstruksi: sertifikatKonstruksi || rule.sertifikatKonstruksi,
+      nilaiTransaksi: nilai,
       jenisPajak: rule.jenisPajak,
-      tarif: String(rule.tarifPajak)
-    });
+      tarifPajak: String(rule.tarifPajak),
+      nilaiDpp: dpp,
+      pajakPph: pph,
+      kodeKapPph: rule.kodePajak,
+      pajakDaerah: pajakDaerah,
+      tarifPpn: rule.kenaPPN ? "11%" : "0%",
+      ppn: ppn,
+      kodeKapPpn: rule.kenaPPN ? "411211-100" : "-", // Example KODE PPN
+      totalPajak: totalPajak,
+      yangDibayarkan: yangDibayarkan,
+    };
+    
+    sessionStorage.setItem('calculationResult', JSON.stringify(resultData));
 
-    // Instead of showing results here, navigate to the results page
     router.push('/hasil');
   };
   
@@ -125,19 +166,23 @@ export default function HomePage() {
       setAsnStatus("");
       setAsnGolongan("");
       setSertifikatKonstruksi("");
-      setPajak(null);
       setError("");
+      setJenisTransaksi("");
   }
 
   const handleWpChange = (value: string) => {
       setWp(value as WpType);
-      setJenisTransaksi("");
       resetDynamicFields();
   }
 
   const handleTransactionChange = (value: string) => {
       setJenisTransaksi(value);
-      resetDynamicFields();
+      // Reset only fields that might change with transaction type
+      setFakturPajak("");
+      setAsnStatus("");
+      setAsnGolongan("");
+      setSertifikatKonstruksi("");
+      setError("");
   }
 
 
@@ -166,8 +211,20 @@ export default function HomePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="nilai-transaksi">Nilai Transaksi (dalam Rupiah)</Label>
+                    <Input
+                      id="nilai-transaksi"
+                      type="number"
+                      placeholder="Contoh: 5000000"
+                      value={nilaiTransaksi}
+                      onChange={(e) => setNilaiTransaksi(e.target.value)}
+                      className="text-lg"
+                    />
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
+                     <div className="space-y-2">
                       <Label>Wajib Pajak (WP)</Label>
                       <RadioGroup value={wp} onValueChange={handleWpChange} className="flex space-x-4 pt-2">
                         <div className="flex items-center space-x-2">
@@ -187,26 +244,39 @@ export default function HomePage() {
                           <SelectValue placeholder="Pilih Jenis Transaksi" />
                         </SelectTrigger>
                         <SelectContent>
-                          {uniqueTransactions.filter(jt => taxRules.some(r => r.jenisTransaksi === jt && r.wp === wp)).map(transaction => (
+                          {uniqueTransactions.filter(jt => taxRules.some(r => r.jenisTransaksi === jt && r.wp === wp && r.status === 'Aktif')).map(transaction => (
                             <SelectItem key={transaction} value={transaction}>{transaction}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="nilai-transaksi">Nilai Transaksi (dalam Rupiah)</Label>
-                    <Input
-                      id="nilai-transaksi"
-                      type="number"
-                      placeholder="Contoh: 5000000"
-                      value={nilaiTransaksi}
-                      onChange={(e) => setNilaiTransaksi(e.target.value)}
-                      className="text-lg"
-                    />
-                  </div>
 
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-muted/50">
+                      <div className="space-y-2">
+                        <Label htmlFor="bidang-bagian">Bidang / Bagian (Opsional)</Label>
+                        <Select value={selectedBidang} onValueChange={setSelectedBidang}>
+                            <SelectTrigger id="bidang-bagian">
+                                <SelectValue placeholder="Pilih Bidang/Bagian" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {departments.map(dep => <SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                      </div>
+                       <div className="space-y-2">
+                        <Label htmlFor="sub-kegiatan">Sub Kegiatan (Opsional)</Label>
+                        <Select value={selectedKegiatan} onValueChange={setSelectedKegiatan}>
+                            <SelectTrigger id="sub-kegiatan">
+                                <SelectValue placeholder="Pilih Sub Kegiatan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                 {activities.map(act => <SelectItem key={act.id} value={act.name}>{act.name}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                      </div>
+                   </div>
+                  
                   {selectedTransaction && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-muted/50">
                       {selectedTransaction.fakturPajak !== "N/A" && (
@@ -276,7 +346,7 @@ export default function HomePage() {
                   
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={handleCalculate} className="w-full text-lg py-6" size="lg">
+                  <Button onClick={handleCalculate} className="w-full text-lg py-6" size="lg" disabled={!jenisTransaksi || !nilaiTransaksi}>
                     <Calculator className="mr-2 h-5 w-5" />
                     Hitung Pajak
                   </Button>

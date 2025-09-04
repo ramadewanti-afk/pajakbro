@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, ListTree, LogOut, ShieldCheck, BookType } from "lucide-react";
+import { LayoutDashboard, ListTree, LogOut, ShieldCheck, BookType, Briefcase, ClipboardList } from "lucide-react";
 import React from 'react';
 
 export default function AdminLayout({
@@ -45,6 +45,24 @@ export default function AdminLayout({
                 >
                   <LayoutDashboard />
                   Dasbor
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  href="/admin/bidang"
+                  isActive={pathname === '/admin/bidang'}
+                >
+                  <Briefcase />
+                  Manajemen Bidang/Bagian
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  href="/admin/kegiatan"
+                  isActive={pathname === '/admin/kegiatan'}
+                >
+                  <ClipboardList />
+                  Manajemen Subkegiatan
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>

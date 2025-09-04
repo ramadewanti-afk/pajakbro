@@ -1,44 +1,73 @@
 
 "use client";
 
+import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, Printer, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
 
+// Define a type for the calculation result data for better type safety
+type CalculationResult = {
+    id: number;
+    namaBidang: string;
+    subKegiatan: string;
+    jenisTransaksi: string;
+    wajibPajak: string;
+    fakturPajak: string;
+    asn: string;
+    golongan: string;
+    sertifikatKonstruksi: string;
+    nilaiTransaksi: number;
+    jenisPajak: string;
+    tarifPajak: string;
+    nilaiDpp: number;
+    pajakPph: number;
+    kodeKapPph: string;
+    pajakDaerah: number;
+    tarifPpn: string;
+    ppn: number;
+    kodeKapPpn: string;
+    totalPajak: number;
+    yangDibayarkan: number;
+};
+
+
 export default function HasilPage() {
     const router = useRouter();
+    const [data, setData] = useState<CalculationResult | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const resultData = sessionStorage.getItem('calculationResult');
+        if (resultData) {
+            try {
+                setData(JSON.parse(resultData));
+            } catch (error) {
+                console.error("Failed to parse calculation result from session storage", error);
+                router.push('/'); // Redirect if data is corrupted
+            }
+        } else {
+             // If no data, redirect back to home
+            router.push('/');
+        }
+        setLoading(false);
+    }, [router]);
 
     const formatCurrency = (value: number) => {
+        if (typeof value !== 'number') return '0';
         return new Intl.NumberFormat('id-ID', { style: 'decimal' }).format(value);
     }
 
-    // Placeholder data based on the image
-    const data = {
-        id: 15,
-        namaBidang: "Umum Kepegawaian",
-        subKegiatan: "Penyediaan Bahan Logistik Kantor",
-        jenisTransaksi: "Makan Minum",
-        wajibPajak: "Orang Pribadi",
-        fakturPajak: "Tidak dapat menerbitkan",
-        asn: "-",
-        golongan: "-",
-        sertifikatKonstruksi: "-",
-        nilaiTransaksi: 1200000,
-        jenisPajak: "PPh 21",
-        tarifPajak: "2,50%",
-        nilaiDpp: 1090909,
-        pajakPph: 27273,
-        kodeKapPph: "411618-100",
-        pajakDaerah: 109091,
-        tarifPpn: "0%",
-        ppn: 0,
-        kodeKapPpn: "-",
-        totalPajak: 27273,
-        yangDibayarkan: 1172727,
-    };
+    if (loading || !data) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <Loader2 className="h-16 w-16 animate-spin text-primary" />
+            </div>
+        )
+    }
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 print:bg-white">
@@ -52,18 +81,22 @@ export default function HasilPage() {
                 <CardContent className="px-8">
                     <Table className="mb-6">
                         <TableBody>
-                            <TableRow>
+                             <TableRow>
                                 <TableCell className="font-semibold w-1/3">ID</TableCell>
                                 <TableCell className="w-2/3">: {data.id}</TableCell>
                             </TableRow>
-                            <TableRow>
-                                <TableCell className="font-semibold">Nama Bidang atau Bagian</TableCell>
-                                <TableCell>: {data.namaBidang}</TableCell>
-                            </TableRow>
-                             <TableRow>
-                                <TableCell className="font-semibold">Sub Kegiatan</TableCell>
-                                <TableCell>: {data.subKegiatan}</TableCell>
-                            </TableRow>
+                            {data.namaBidang && data.namaBidang !== '-' && (
+                                <TableRow>
+                                    <TableCell className="font-semibold">Nama Bidang atau Bagian</TableCell>
+                                    <TableCell>: {data.namaBidang}</TableCell>
+                                </TableRow>
+                            )}
+                            {data.subKegiatan && data.subKegiatan !== '-' && (
+                                <TableRow>
+                                    <TableCell className="font-semibold">Sub Kegiatan</TableCell>
+                                    <TableCell>: {data.subKegiatan}</TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
 
@@ -102,7 +135,29 @@ export default function HasilPage() {
                         <TableBody>
                             <TableRow>
                                 <TableCell className="w-1/3">Nilai Transaksi</TableCell>
-                                <TableCell className="w-2/3">: {formatCurrency(data.nilaiTransaksi)}</TableCell>
+                                <TableCell className="w-2/3">: Rp {formatCurrency(data.nilaiTransaksi)}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Nilai DPP</TableCell>
+                                <TableCell>: Rp {formatCurrency(data.nilaiDpp)}</TableCell>
+                            </TableRow>
+                             {data.pajakDaerah > 0 && (
+                                <TableRow>
+                                    <TableCell>Pajak daerah Makan Minum (10%)</TableCell>
+                                    <TableCell>: Rp {formatCurrency(data.pajakDaerah)}</TableCell>
+                                </TableRow>
+                            )}
+                             <TableRow>
+                                <TableCell>Tarif PPN</TableCell>
+                                <TableCell>: {data.tarifPpn}</TableCell>
+                            </TableRow>
+                             <TableRow className="bg-blue-100 font-bold">
+                                <TableCell>PPN</TableCell>
+                                <TableCell>: Rp {formatCurrency(data.ppn)}</TableCell>
+                            </TableRow>
+                             <TableRow>
+                                <TableCell>Kode KAP E-Billing PPN</TableCell>
+                                <TableCell>: {data.kodeKapPpn}</TableCell>
                             </TableRow>
                             <TableRow className="bg-blue-100 font-bold">
                                 <TableCell>Jenis Pajak</TableCell>
@@ -112,41 +167,21 @@ export default function HasilPage() {
                                 <TableCell>Tarif Pajak</TableCell>
                                 <TableCell>: {data.tarifPajak}</TableCell>
                             </TableRow>
-                            <TableRow>
-                                <TableCell>Nilai DPP</TableCell>
-                                <TableCell>: {formatCurrency(data.nilaiDpp)}</TableCell>
-                            </TableRow>
                             <TableRow className="bg-blue-100 font-bold">
                                 <TableCell>Pajak PPh</TableCell>
-                                <TableCell>: {formatCurrency(data.pajakPph)}</TableCell>
+                                <TableCell>: Rp {formatCurrency(data.pajakPph)}</TableCell>
                             </TableRow>
                              <TableRow>
                                 <TableCell>Kode KAP E-Billing PPh</TableCell>
                                 <TableCell>: {data.kodeKapPph}</TableCell>
                             </TableRow>
-                             <TableRow>
-                                <TableCell>Pajak daerah Makan Minum</TableCell>
-                                <TableCell>: {formatCurrency(data.pajakDaerah)}</TableCell>
-                            </TableRow>
-                             <TableRow>
-                                <TableCell>Tarif PPN 11%</TableCell>
-                                <TableCell>: {data.tarifPpn}</TableCell>
-                            </TableRow>
-                             <TableRow className="bg-blue-100 font-bold">
-                                <TableCell>PPN</TableCell>
-                                <TableCell>: {formatCurrency(data.ppn)}</TableCell>
-                            </TableRow>
-                             <TableRow>
-                                <TableCell>Kode KAP E-Billing PPN</TableCell>
-                                <TableCell>: {data.kodeKapPpn}</TableCell>
-                            </TableRow>
                             <TableRow className="bg-blue-200 font-bold text-lg">
                                 <TableCell>Total Pajak</TableCell>
-                                <TableCell>: {formatCurrency(data.totalPajak)}</TableCell>
+                                <TableCell>: Rp {formatCurrency(data.totalPajak)}</TableCell>
                             </TableRow>
                              <TableRow className="bg-blue-200 font-bold text-lg">
                                 <TableCell>Yang dibayarkan</TableCell>
-                                <TableCell>: {formatCurrency(data.yangDibayarkan)}</TableCell>
+                                <TableCell>: Rp {formatCurrency(data.yangDibayarkan)}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
