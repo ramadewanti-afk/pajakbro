@@ -279,8 +279,6 @@ export default function HomePage() {
   };
 
   const availableTransactions = useMemo(() => {
-      // The original code filtered transactions based on the selected 'wp' (taxpayer type).
-      // This has been removed to always show all available transaction types.
       return transactionTypes;
   }, [transactionTypes]);
   
@@ -319,6 +317,11 @@ export default function HomePage() {
   }
 
   const currentRule = useMemo(findMatchingRule, [jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi, taxRules]);
+
+  const showFakturPajak = useMemo(() => taxRules.some(r => r.jenisTransaksi === jenisTransaksi && r.wp === wp && r.fakturPajak !== 'N/A'), [taxRules, jenisTransaksi, wp]);
+  const showAsnStatus = useMemo(() => taxRules.some(r => r.jenisTransaksi === jenisTransaksi && r.wp === wp && r.asn !== 'N/A'), [taxRules, jenisTransaksi, wp]);
+  const showAsnGolongan = useMemo(() => showAsnStatus && asnStatus === 'ASN' && taxRules.some(r => r.jenisTransaksi === jenisTransaksi && r.wp === wp && r.asn === 'ASN' && r.golongan !== 'N/A'), [taxRules, jenisTransaksi, wp, asnStatus, showAsnStatus]);
+  const showSertifikatKonstruksi = useMemo(() => taxRules.some(r => r.jenisTransaksi === jenisTransaksi && r.wp === wp && r.sertifikatKonstruksi !== 'N/A'), [taxRules, jenisTransaksi, wp]);
 
 
   return (
@@ -416,6 +419,72 @@ export default function HomePage() {
                           </Select>
                         </div>
                       </div>
+                      
+                      <Separator />
+
+                      <div>
+                          <Label className="text-xs text-muted-foreground">Kondisi Spesifik (jika ada)</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-muted/50 mt-2">
+                            <div className="space-y-2">
+                              <Label>Punya Faktur Pajak?</Label>
+                              <RadioGroup 
+                                value={fakturPajak} 
+                                onValueChange={(v) => setFakturPajak(v as FakturPajak)} 
+                                className="flex space-x-4 pt-2"
+                                disabled={!showFakturPajak}
+                              >
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Punya" id="fp-punya" />
+                                    <Label htmlFor="fp-punya">Punya</Label>
+                                 </div>
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Tidak Punya" id="fp-tidak" />
+                                    <Label htmlFor="fp-tidak">Tidak</Label>
+                                 </div>
+                              </RadioGroup>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Status Kepegawaian</Label>
+                                <Select value={asnStatus} onValueChange={(v) => setAsnStatus(v as AsnStatus)} disabled={!showAsnStatus}>
+                                    <SelectTrigger><SelectValue placeholder="Pilih Status" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ASN">ASN</SelectItem>
+                                        <SelectItem value="NON ASN">NON ASN</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Golongan ASN</Label>
+                                <Select value={asnGolongan} onValueChange={(v) => setAsnGolongan(v as AsnGolongan)} disabled={!showAsnGolongan}>
+                                    <SelectTrigger><SelectValue placeholder="Pilih Golongan" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="I">I</SelectItem>
+                                        <SelectItem value="II">II</SelectItem>
+                                        <SelectItem value="III">III</SelectItem>
+                                        <SelectItem value="IV">IV</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Punya Sertifikat Konstruksi?</Label>
+                              <RadioGroup 
+                                value={sertifikatKonstruksi} 
+                                onValueChange={(v) => setSertifikatKonstruksi(v as SertifikatKonstruksi)} 
+                                className="flex space-x-4 pt-2"
+                                disabled={!showSertifikatKonstruksi}
+                              >
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Punya" id="sk-punya" />
+                                    <Label htmlFor="sk-punya">Punya</Label>
+                                 </div>
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Tidak Punya" id="sk-tidak" />
+                                    <Label htmlFor="sk-tidak">Tidak</Label>
+                                 </div>
+                              </RadioGroup>
+                            </div>
+                          </div>
+                      </div>
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-muted/50">
                           <div className="space-y-2">
@@ -441,67 +510,6 @@ export default function HomePage() {
                             </Select>
                           </div>
                        </div>
-                      
-                      {currentRule && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-muted/50">
-                          {currentRule.fakturPajak !== "N/A" && (
-                            <div className="space-y-2">
-                              <Label>Punya Faktur Pajak?</Label>
-                              <RadioGroup value={fakturPajak} onValueChange={(v) => setFakturPajak(v as FakturPajak)} className="flex space-x-4 pt-2">
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Punya" id="fp-punya" />
-                                    <Label htmlFor="fp-punya">Punya</Label>
-                                 </div>
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Tidak Punya" id="fp-tidak" />
-                                    <Label htmlFor="fp-tidak">Tidak</Label>
-                                 </div>
-                              </RadioGroup>
-                            </div>
-                          )}
-                           {currentRule.asn !== "N/A" && (
-                            <div className="space-y-2">
-                                <Label>Status Kepegawaian</Label>
-                                <Select value={asnStatus} onValueChange={(v) => setAsnStatus(v as AsnStatus)}>
-                                    <SelectTrigger><SelectValue placeholder="Pilih Status" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ASN">ASN</SelectItem>
-                                        <SelectItem value="NON ASN">NON ASN</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                          )}
-                          {asnStatus === "ASN" && currentRule.golongan !== "N/A" && (
-                             <div className="space-y-2">
-                                <Label>Golongan ASN</Label>
-                                <Select value={asnGolongan} onValueChange={(v) => setAsnGolongan(v as AsnGolongan)}>
-                                    <SelectTrigger><SelectValue placeholder="Pilih Golongan" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="I">I</SelectItem>
-                                        <SelectItem value="II">II</SelectItem>
-                                        <SelectItem value="III">III</SelectItem>
-                                        <SelectItem value="IV">IV</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                          )}
-                          {currentRule.sertifikatKonstruksi !== "N/A" && (
-                            <div className="space-y-2">
-                              <Label>Punya Sertifikat Konstruksi?</Label>
-                              <RadioGroup value={sertifikatKonstruksi} onValueChange={(v) => setSertifikatKonstruksi(v as SertifikatKonstruksi)} className="flex space-x-4 pt-2">
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Punya" id="sk-punya" />
-                                    <Label htmlFor="sk-punya">Punya</Label>
-                                 </div>
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Tidak Punya" id="sk-tidak" />
-                                    <Label htmlFor="sk-tidak">Tidak</Label>
-                                 </div>
-                              </RadioGroup>
-                            </div>
-                          )}
-                        </div>
-                      )}
                       
                       {error && (
                         <div className="p-4 rounded-md bg-destructive/10 text-destructive text-center font-medium">
