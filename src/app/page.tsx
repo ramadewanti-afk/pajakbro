@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 type WpType = "Orang Pribadi" | "Badan Usaha";
 
@@ -30,6 +31,9 @@ const MAIN_TITLE_KEY = 'app-main-title';
 const DEFAULT_MAIN_TITLE = 'Kalkulator Pajak Bro';
 const MAIN_SUBTITLE_KEY = 'app-main-subtitle';
 const DEFAULT_MAIN_SUBTITLE = 'Hitung Pajak Penghasilan (PPh) dan PPN berdasarkan jenis transaksi dengan mudah dan akurat.';
+const LOGO_STORAGE_KEY = 'app-logo-url';
+const DEFAULT_LOGO_URL = 'https://placehold.co/80x80';
+
 
 // Function to format currency
 const formatCurrency = (value: number) => {
@@ -127,7 +131,7 @@ const CalculationResultDisplay = ({ result, onSave }: { result: CalculationResul
                     <p className="font-mono text-right">{formatCurrency(result.yangDibayarkan)}</p>
                  </div>
             </CardContent>
-            <CardFooter className="flex justify-end bg-blue-100/50 border-t pt-4">
+            <CardFooter className="flex justify-end pt-4 border-t">
                 <Button onClick={onSave}>
                     <FileText className="mr-2 h-4 w-4" />
                     Simpan & Lihat Rincian Lengkap
@@ -254,6 +258,7 @@ export default function HomePage() {
   // Customization state
   const [mainTitle, setMainTitle] = useState(DEFAULT_MAIN_TITLE);
   const [mainSubtitle, setMainSubtitle] = useState(DEFAULT_MAIN_SUBTITLE);
+  const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO_URL);
 
   useEffect(() => {
     sessionStorage.removeItem('calculationResult');
@@ -264,6 +269,10 @@ export default function HomePage() {
       
     const storedMainSubtitle = localStorage.getItem(MAIN_SUBTITLE_KEY);
     if (storedMainSubtitle) setMainSubtitle(storedMainSubtitle);
+
+    const storedLogoUrl = localStorage.getItem(LOGO_STORAGE_KEY);
+    if (storedLogoUrl) setLogoUrl(storedLogoUrl);
+
 
   }, []);
 
@@ -439,7 +448,15 @@ export default function HomePage() {
                 </Link>
             </div>
             <div className="flex justify-center items-center gap-4 mb-2">
-                <Coins className="h-10 w-10 text-primary" />
+                 <Image 
+                    src={logoUrl} 
+                    alt="Logo" 
+                    width={40} 
+                    height={40} 
+                    data-ai-hint="logo" 
+                    unoptimized
+                    className="h-10 w-10"
+                />
                 <h1 className="text-4xl font-bold tracking-tight">
                     {mainTitle}
                 </h1>
@@ -657,7 +674,7 @@ export default function HomePage() {
                             </Alert>
                         )}
                     </CardContent>
-                    {calculationHistory.length > ITEMS_PER_PAGE && (
+                    {filteredHistory.length > ITEMS_PER_PAGE && (
                         <CardFooter className="pt-4">
                             <Button variant="outline" className="w-full" onClick={() => router.push('/riwayat')}>
                                 Lihat Semua Riwayat ({filteredHistory.length})
@@ -672,3 +689,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
