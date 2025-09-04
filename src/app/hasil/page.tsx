@@ -9,9 +9,10 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { ArrowLeft, FileDown, Loader2, QrCode } from "lucide-react";
 import Image from "next/image";
 import QRCode from "react-qr-code";
-import { CalculationResult } from '@/data/history';
+import { CalculationResult, calculationHistory as initialHistory } from '@/data/history';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 
 const LOGO_STORAGE_KEY = 'app-logo-url';
@@ -41,33 +42,35 @@ export default function HasilPage() {
     const [reportSubtitle, setReportSubtitle] = useState(DEFAULT_REPORT_SUBTITLE);
 
     const [qrCodeUrl, setQrCodeUrl] = useState('');
+    const [history] = useLocalStorage<CalculationResult[]>("calculationHistory", initialHistory);
+
 
     useEffect(() => {
         let resultData = null;
-        const sessionData = sessionStorage.getItem('calculationResult');
+        const idParam = searchParams.get('id');
 
-        if (sessionData) {
-            try {
-                resultData = JSON.parse(sessionData);
-            } catch (error) {
-                console.error("Failed to parse calculation result from session storage", error);
+        // Priority 1: Find by ID from URL (for sharing)
+        if (idParam) {
+            const foundInHistory = history.find(item => item.id === idParam);
+            if (foundInHistory) {
+                resultData = foundInHistory;
             }
         } else {
-            const dataParam = searchParams.get('data');
-            if (dataParam) {
+             // Priority 2: Get from session storage (for direct navigation)
+            const sessionData = sessionStorage.getItem('calculationResult');
+            if (sessionData) {
                 try {
-                    resultData = JSON.parse(atob(dataParam));
+                    resultData = JSON.parse(sessionData);
                 } catch (error) {
-                    console.error("Failed to parse data from URL", error);
+                    console.error("Failed to parse calculation result from session storage", error);
                 }
             }
         }
-
+        
         if (resultData) {
             setData(resultData);
             if (typeof window !== 'undefined') {
-                const encodedData = btoa(JSON.stringify(resultData));
-                setQrCodeUrl(`${window.location.origin}/hasil?data=${encodedData}`);
+                setQrCodeUrl(`${window.location.origin}/hasil?id=${resultData.id}`);
             }
         }
 
@@ -82,7 +85,7 @@ export default function HasilPage() {
         if (storedReportSubtitle) setReportSubtitle(storedReportSubtitle);
 
         setLoading(false);
-    }, [router, searchParams]);
+    }, [searchParams, history]);
     
     const handleDownloadPdf = async () => {
         const element = printRef.current;
@@ -287,5 +290,3 @@ export default function HasilPage() {
         </div>
     );
 };
-
-    
