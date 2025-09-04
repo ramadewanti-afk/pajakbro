@@ -237,10 +237,10 @@ export default function HomePage() {
 
   // Specific condition states that the user might need to specify in some cases.
   // These are not primary inputs but might be needed to disambiguate rules.
-  const [fakturPajak, setFakturPajak] = useState("N/A");
-  const [asnStatus, setAsnStatus] = useState("N/A");
-  const [asnGolongan, setAsnGolongan] = useState("N/A");
-  const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState("N/A");
+  const [fakturPajak, setFakturPajak] = useState<"Punya" | "Tidak Punya" | "N/A">("N/A");
+  const [asnStatus, setAsnStatus] = useState<"ASN" | "NON ASN" | "N/A">("N/A");
+  const [asnGolongan, setAsnGolongan] = useState<"I" | "II" | "III" | "IV" | "N/A">("N/A");
+  const [sertifikatKonstruksi, setSertifikatKonstruksi] = useState<"Punya" | "Tidak Punya" | "N/A">("N/A");
 
   // Calculation and history state
   const [error, setError] = useState<string>("");
@@ -276,14 +276,21 @@ export default function HomePage() {
         if (r.status !== 'Aktif') return false;
         if (r.jenisTransaksi !== jenisTransaksi) return false;
         if (r.wp !== wp) return false;
+        if (!checkPtkp(nilai, r.ptkp)) return false;
         
-        // PTKP check is crucial
-        return checkPtkp(nilai, r.ptkp);
+        // Match specific conditions if they are not "N/A"
+        if (fakturPajak !== 'N/A' && r.fakturPajak !== 'N/A' && r.fakturPajak !== fakturPajak) return false;
+        if (asnStatus !== 'N/A' && r.asn !== 'N/A' && r.asn !== asnStatus) return false;
+        if (asnGolongan !== 'N/A' && r.golongan !== 'N/A' && r.golongan !== asnGolongan) return false;
+        if (sertifikatKonstruksi !== 'N/A' && r.sertifikatKonstruksi !== 'N/A' && r.sertifikatKonstruksi !== sertifikatKonstruksi) return false;
+        
+        return true;
     });
 
     if (candidates.length === 0) return null;
     
-    // Fallback to the first match if multiple are found (should be rare with good rules)
+    // Simple logic: return the first candidate found.
+    // For more complex scenarios, scoring might be needed, but this is a robust start.
     return candidates[0];
   };
 
@@ -306,7 +313,7 @@ export default function HomePage() {
       performCalculation(nilai, rule);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nilaiTransaksi, jenisTransaksi, wp]);
+  }, [nilaiTransaksi, jenisTransaksi, wp, fakturPajak, asnStatus, asnGolongan, sertifikatKonstruksi]);
 
   
  const performCalculation = (nilai: number, rule: Transaction) => {
@@ -489,6 +496,53 @@ export default function HomePage() {
                            />
                         </div>
                       </div>
+
+                      {/* Specific Conditions Section */}
+                      <div className="p-4 border rounded-md bg-white space-y-4">
+                          <p className="text-sm font-medium text-muted-foreground">Kondisi Spesifik (jika ada)</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <div className="space-y-2">
+                                <Label>Punya Faktur Pajak?</Label>
+                                <RadioGroup value={fakturPajak} onValueChange={(v) => setFakturPajak(v as any)} className="flex space-x-4 pt-2">
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="Punya" id="fp_punya" /><Label htmlFor="fp_punya">Punya</Label></div>
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak Punya" id="fp_tidak" /><Label htmlFor="fp_tidak">Tidak</Label></div>
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="N/A" id="fp_na" /><Label htmlFor="fp_na">N/A</Label></div>
+                                </RadioGroup>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Status Kepegawaian</Label>
+                                <Select value={asnStatus} onValueChange={(v) => setAsnStatus(v as any)}>
+                                    <SelectTrigger><SelectValue/></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="N/A">N/A (Tidak Berlaku)</SelectItem>
+                                        <SelectItem value="ASN">ASN</SelectItem>
+                                        <SelectItem value="NON ASN">NON ASN</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                             <div className="space-y-2">
+                                <Label>Golongan ASN</Label>
+                                <Select value={asnGolongan} onValueChange={(v) => setAsnGolongan(v as any)}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="N/A">N/A (Tidak Berlaku)</SelectItem>
+                                        <SelectItem value="I">I</SelectItem>
+                                        <SelectItem value="II">II</SelectItem>
+                                        <SelectItem value="III">III</SelectItem>
+                                        <SelectItem value="IV">IV</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Punya Sertifikat Konstruksi?</Label>
+                                <RadioGroup value={sertifikatKonstruksi} onValueChange={(v) => setSertifikatKonstruksi(v as any)} className="flex space-x-4 pt-2">
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="Punya" id="sk_punya" /><Label htmlFor="sk_punya">Punya</Label></div>
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak Punya" id="sk_tidak" /><Label htmlFor="sk_tidak">Tidak</Label></div>
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="N/A" id="sk_na" /><Label htmlFor="sk_na">N/A</Label></div>
+                                </RadioGroup>
+                            </div>
+                          </div>
+                      </div>
                       
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-md bg-white">
                           <div className="space-y-2">
@@ -593,3 +647,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
