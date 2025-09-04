@@ -1,3 +1,4 @@
+
 export type Transaction = {
   jenisTransaksi: string;
   wp: "Orang Pribadi" | "Badan Usaha";
@@ -10,6 +11,7 @@ export type Transaction = {
   ptkp: string;
   tarifPajak: string | number;
   kenaPPN: boolean;
+  status: "Aktif" | "Tidak Aktif";
 };
 
 export const taxRules: Transaction[] = [
@@ -26,6 +28,7 @@ export const taxRules: Transaction[] = [
     ptkp: "N/A",
     tarifPajak: "2.5%",
     kenaPPN: false,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Service Kendaraan, AC, Laptop, dll",
@@ -39,6 +42,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2.5%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Sewa (Alat kesenian, Genset, Sound System, Kendaraan, dll)",
@@ -52,6 +56,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2.5%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Fotokopi/Cetak banner, dll",
@@ -65,6 +70,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2.5%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Honor (Narsum, Juri, dll)",
@@ -78,6 +84,7 @@ export const taxRules: Transaction[] = [
     ptkp: "N/A",
     tarifPajak: "15%",
     kenaPPN: false,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Honor (Narsum, Juri, dll)",
@@ -91,6 +98,7 @@ export const taxRules: Transaction[] = [
     ptkp: "N/A",
     tarifPajak: "5%",
     kenaPPN: false,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Honor (Narsum, Juri, dll)",
@@ -104,6 +112,7 @@ export const taxRules: Transaction[] = [
     ptkp: "N/A",
     tarifPajak: "0%",
     kenaPPN: false,
+    status: "Aktif",
   },
     {
     jenisTransaksi: "Honor (Narsum, Juri, dll)",
@@ -117,6 +126,7 @@ export const taxRules: Transaction[] = [
     ptkp: "N/A",
     tarifPajak: "0%",
     kenaPPN: false,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Honor (Narsum, Juri, dll)",
@@ -130,6 +140,7 @@ export const taxRules: Transaction[] = [
     ptkp: "N/A",
     tarifPajak: "5%",
     kenaPPN: false,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Jasa Pentas Seni (Tari, Wayang, dll)",
@@ -143,6 +154,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2.5%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Tukang Harian (Pekerja lepas)",
@@ -156,6 +168,7 @@ export const taxRules: Transaction[] = [
     ptkp: "0-450000",
     tarifPajak: "0%",
     kenaPPN: false,
+    status: "Aktif",
   },
     {
     jenisTransaksi: "Tukang Harian (Pekerja lepas)",
@@ -169,6 +182,7 @@ export const taxRules: Transaction[] = [
     ptkp: "450000-2500000",
     tarifPajak: "0.5%",
     kenaPPN: false,
+    status: "Aktif",
   },
     {
     jenisTransaksi: "Tukang Harian (Pekerja lepas)",
@@ -182,6 +196,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2500000",
     tarifPajak: "2.5%",
     kenaPPN: false,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Hadiah Lomba",
@@ -195,6 +210,7 @@ export const taxRules: Transaction[] = [
     ptkp: "N/A",
     tarifPajak: "5%",
     kenaPPN: false,
+    status: "Aktif",
   },
 
   // Badan Usaha
@@ -210,6 +226,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "1.5%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Makan Minum",
@@ -223,6 +240,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2%",
     kenaPPN: false,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Service Kendaraan, AC, Laptop, dll",
@@ -236,6 +254,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Service Kendaraan, AC, Laptop, dll",
@@ -249,6 +268,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "4%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Sewa (Alat kesenian, Genset, Sound System, Kendaraan, dll)",
@@ -262,6 +282,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2%",
     kenaPPN: true,
+    status: "Aktif",
   },
    {
     jenisTransaksi: "Sewa (Alat kesenian, Genset, Sound System, Kendaraan, dll)",
@@ -275,6 +296,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "4%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Sewa Kendaraan Plat Kuning",
@@ -288,6 +310,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Fotokopi/Cetak banner, dll",
@@ -301,6 +324,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2%",
     kenaPPN: true,
+    status: "Aktif",
   },
    {
     jenisTransaksi: "Fotokopi/Cetak banner, dll",
@@ -314,6 +338,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "4%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Jasa Pentas Seni (Tari, Wayang, dll)",
@@ -327,6 +352,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Jasa Pentas Seni (Tari, Wayang, dll)",
@@ -340,6 +366,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "4%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Jasa Penyelenggara Acara (EO)",
@@ -353,6 +380,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2%",
     kenaPPN: true,
+    status: "Aktif",
   },
    {
     jenisTransaksi: "Jasa Penyelenggara Acara (EO)",
@@ -366,6 +394,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "4%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Belanja Premi Asuransi",
@@ -379,6 +408,7 @@ export const taxRules: Transaction[] = [
     ptkp: "N/A",
     tarifPajak: "2%",
     kenaPPN: false,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Pemeliharaan Bangunan (Service lampu, pipa bocor, pengecatan ring)",
@@ -392,6 +422,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "2%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Jasa Konsultasi Konstruksi",
@@ -405,6 +436,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "3.5%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Jasa Konsultasi Konstruksi",
@@ -418,6 +450,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "6%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Pemeliharaan Bangunan (ganti atap, sekat permanen, perbaikan stru)",
@@ -431,6 +464,7 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "1.75%",
     kenaPPN: true,
+    status: "Aktif",
   },
   {
     jenisTransaksi: "Pemeliharaan Bangunan (ganti atap, sekat permanen, perbaikan stru)",
@@ -444,5 +478,6 @@ export const taxRules: Transaction[] = [
     ptkp: ">2000000",
     tarifPajak: "4%",
     kenaPPN: true,
+    status: "Aktif",
   },
 ];

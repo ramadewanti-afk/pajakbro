@@ -28,6 +28,9 @@ export interface BadgeProps
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
+  if (variant === "default") {
+      className = `${className ?? ""} bg-green-500 text-white`;
+  }
   return (
     <div className={cn(badgeVariants({ variant }), className)} {...props} />
   )
