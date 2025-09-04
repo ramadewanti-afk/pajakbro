@@ -13,6 +13,11 @@ import { CalculationResult } from '@/data/history';
 
 const LOGO_STORAGE_KEY = 'app-logo-url';
 const DEFAULT_LOGO_URL = 'https://placehold.co/80x80';
+const REPORT_TITLE_KEY = 'app-report-title';
+const DEFAULT_REPORT_TITLE = 'HASIL PERHITUNGAN PAJAK';
+const REPORT_SUBTITLE_KEY = 'app-report-subtitle';
+const DEFAULT_REPORT_SUBTITLE = 'Berikut adalah rincian perhitungan pajak berdasarkan data yang dimasukkan.';
+
 
 const formatCurrency = (value: number) => {
     if (typeof value !== 'number') return 'Rp 0';
@@ -20,12 +25,17 @@ const formatCurrency = (value: number) => {
     return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(roundedValue);
 }
 
-function HasilContent() {
+export default function HasilPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [data, setData] = useState<CalculationResult | null>(null);
     const [loading, setLoading] = useState(true);
+    
+    // States for customization
     const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO_URL);
+    const [reportTitle, setReportTitle] = useState(DEFAULT_REPORT_TITLE);
+    const [reportSubtitle, setReportSubtitle] = useState(DEFAULT_REPORT_SUBTITLE);
+
     const [qrCodeUrl, setQrCodeUrl] = useState('');
 
     useEffect(() => {
@@ -55,14 +65,19 @@ function HasilContent() {
             setQrCodeUrl(`${window.location.origin}/hasil?data=${encodedData}`);
         } else {
             if (typeof window !== 'undefined') {
-                router.push('/');
+                // router.push('/'); // Avoid pushing immediately to prevent hydration issues
             }
         }
 
+        // Load customizations from localStorage
         const storedLogoUrl = localStorage.getItem(LOGO_STORAGE_KEY);
-        if (storedLogoUrl) {
-            setLogoUrl(storedLogoUrl);
-        }
+        if (storedLogoUrl) setLogoUrl(storedLogoUrl);
+        
+        const storedReportTitle = localStorage.getItem(REPORT_TITLE_KEY);
+        if (storedReportTitle) setReportTitle(storedReportTitle);
+
+        const storedReportSubtitle = localStorage.getItem(REPORT_SUBTITLE_KEY);
+        if (storedReportSubtitle) setReportSubtitle(storedReportSubtitle);
 
         setLoading(false);
     }, [router, searchParams]);
@@ -81,8 +96,8 @@ function HasilContent() {
     
     if (!data) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4">
-                <p>Data perhitungan tidak ditemukan. Anda akan diarahkan kembali.</p>
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4 p-4 text-center">
+                <p>Data perhitungan tidak ditemukan. Silakan kembali ke kalkulator untuk memulai perhitungan baru.</p>
                  <Button onClick={() => router.push('/')}>Kembali ke Kalkulator</Button>
             </div>
         )
@@ -107,7 +122,8 @@ function HasilContent() {
                             unoptimized
                         />
                     </div>
-                    <CardTitle className="text-2xl font-bold">HASIL PERHITUNGAN PAJAK</CardTitle>
+                    <CardTitle className="text-2xl font-bold">{reportTitle}</CardTitle>
+                    <CardDescription>{reportSubtitle}</CardDescription>
                 </CardHeader>
                 <CardContent className="px-8 grid md:grid-cols-3 gap-8">
                     <div className="md:col-span-2">
@@ -252,16 +268,3 @@ function HasilContent() {
         </div>
     );
 };
-
-
-export default function HasilPage() {
-    return (
-        <Suspense fallback={
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <Loader2 className="h-16 w-16 animate-spin text-primary" />
-            </div>
-        }>
-            <HasilContent />
-        </Suspense>
-    )
-}
