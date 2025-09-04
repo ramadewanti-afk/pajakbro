@@ -2,7 +2,7 @@
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarInset, SidebarHeader, SidebarTrigger, SidebarContent, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { Home, History, LogOut, Loader2, Database } from "lucide-react";
+import { Home, History, LogOut, Loader2, Database, ClipboardList, ListTree } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -69,6 +69,22 @@ export default function AdminLayout({
                   <Link href="/admin/tax-rules">
                     <Database />
                     <span>Data Aturan Pajak</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+               <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Manajemen Bidang/Kegiatan">
+                  <Link href="/admin/kegiatan">
+                    <ClipboardList />
+                    <span>Manajemen Bidang/Kegiatan</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Manajemen Sub Kegiatan">
+                  <Link href="/admin/subkegiatan">
+                    <ListTree />
+                    <span>Manajemen Sub Kegiatan</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
