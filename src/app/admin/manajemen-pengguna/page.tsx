@@ -11,8 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoreHorizontal, PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { users as initialUsers, User } from "@/data/users";
+import { departments } from "@/data/departments";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const UserFormDialog = ({
   isOpen,
@@ -28,22 +30,25 @@ const UserFormDialog = ({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"Admin" | "User">("User");
+  const [bidang, setBidang] = useState<string | undefined>("");
 
   useEffect(() => {
     if (user) {
       setName(user.name);
       setEmail(user.email);
       setRole(user.role);
+      setBidang(user.bidang);
     } else {
       setName("");
       setEmail("");
       setRole("User");
+      setBidang("");
     }
   }, [user]);
 
   const handleSave = () => {
     if (!name || !email) return;
-    onSave({ id: user?.id, name, email, role });
+    onSave({ id: user?.id, name, email, role, bidang });
     setIsOpen(false);
   };
 
@@ -79,6 +84,22 @@ const UserFormDialog = ({
               onChange={(e) => setEmail(e.target.value)}
               className="col-span-3"
             />
+          </div>
+           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="bidang" className="text-right">
+              Bidang
+            </Label>
+             <Select value={bidang} onValueChange={setBidang} >
+                <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Pilih Bidang" />
+                </SelectTrigger>
+                <SelectContent>
+                    {departments.map(dep => (
+                        <SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>
+                    ))}
+                     <SelectItem value="Administrator">Administrator</SelectItem>
+                </SelectContent>
+            </Select>
           </div>
         </div>
         <DialogFooter>
@@ -125,6 +146,7 @@ export default function ManajemenPenggunaPage() {
         name: userToSave.name,
         email: userToSave.email,
         role: userToSave.role || "User",
+        bidang: userToSave.bidang
       };
       setUsers(currentUsers => [...currentUsers, newUser]);
     }
@@ -152,6 +174,7 @@ export default function ManajemenPenggunaPage() {
                 <TableRow>
                   <TableHead>Nama</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Bidang/Bagian</TableHead>
                   <TableHead>Peran</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
@@ -161,6 +184,7 @@ export default function ManajemenPenggunaPage() {
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.bidang || '-'}</TableCell>
                     <TableCell>
                       <Badge variant={user.role === 'Admin' ? 'destructive' : 'secondary'}>
                         {user.role}

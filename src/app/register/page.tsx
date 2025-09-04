@@ -7,27 +7,30 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserPlus, ArrowLeft, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { departments } from "@/data/departments";
 
 export default function RegisterPage() {
     const router = useRouter();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [bidang, setBidang] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
 
     const handleRegister = () => {
         setError("");
-        if (!name || !email || !password) {
+        if (!name || !email || !password || !bidang) {
             setError("Semua field wajib diisi.");
             return;
         }
         // In a real app, you would send this to your backend API
         // to create a new user. Here, we'll just simulate success.
-        console.log("New user registered:", { name, email });
+        console.log("New user registered:", { name, email, bidang });
         setSuccess(true);
         // Optionally redirect after a delay
         setTimeout(() => {
@@ -73,6 +76,17 @@ export default function RegisterPage() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="bidang">Bidang / Bagian</Label>
+                                <Select value={bidang} onValueChange={setBidang} required>
+                                    <SelectTrigger id="bidang">
+                                        <SelectValue placeholder="Pilih Bidang/Bagian" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {departments.map(dep => <SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="password">Password</Label>
