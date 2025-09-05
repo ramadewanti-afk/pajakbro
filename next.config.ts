@@ -28,8 +28,8 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '4.5mb',
     },
-    allowedDevOrigins: ["*.cloudworkstations.dev"],
   },
+  allowedDevOrigins: ["*.cloudworkstations.dev"],
 };
 
 export default withPWA(nextConfig);
